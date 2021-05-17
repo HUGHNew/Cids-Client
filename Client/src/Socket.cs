@@ -4,20 +4,18 @@ using System.Net;
 
 namespace Client
 {
-	public class UDPsocket
+	public class ClientFunc
 	{
-		public static String url;
-		private Socket client;
-		static public String ip;
-		static public int port;
-		public UDPsocket()
-		{
-			client = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);// udp
-			client.Bind(new IPEndPoint(IPAddress.Parse(ip), port));//绑定端口号和IP
-		}
-		public UDPsocket startup() {
-			//client.SendTo();
-			return this;
-		}
+		private UdpClient Client;
+		public const int MainPort= 20800;
+		public readonly IPAddress MainServer = IPAddress.Parse(""); // Server IP need
+		private String lastTime,MirrorIP;
+		//public Client
+		// ctor
+		public void Startup()
+        {
+            //Client.Send
+        }
+		
 	}
 }

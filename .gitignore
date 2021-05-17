@@ -1,2 +1,5 @@
 # binary files
 Client/bin
+
+# not essential config file
+.vs
