@@ -56,7 +56,7 @@ namespace Client
         const int SPIF_SENDWININICHANGE = 0x02;
 
         [DllImport("user32.dll", CharSet = CharSet.Auto)]
-        static extern int SystemParametersInfo(int uAction, int uParam, string lpvParam, int fuWinIni);
+        static extern int SystemParametersInfo(int uAction, int uParam, string lpvParam, int fuWinIni); // for Wallpaper Set
         private enum Style : int
         {
             Tiled,
@@ -68,7 +68,7 @@ namespace Client
             Bitmap myBmp = new Bitmap(strSavePath);
             string fileName = Path.GetTempFileName() + ".bmp";
             myBmp.Save(fileName, System.Drawing.Imaging.ImageFormat.Bmp);
-            RegistryKey key = Registry.CurrentUser.OpenSubKey(@"Control Panel\Desktop", true);
+            RegistryKey key = Registry.CurrentUser.OpenSubKey(@"Control Panel\Desktop", true); // get the key of desk wallpaper
             if (style == Style.Stretched)
             {
                 key.SetValue(@"WallpaperStyle", 2.ToString());
@@ -89,79 +89,75 @@ namespace Client
         public Form1()
         {
             InitializeComponent();
-            backgroundWorker1.RunWorkerAsync();
+            BGWorkerMain.RunWorkerAsync();
         }
-        private void backgroundWorker1_DoWork(object sender, System.ComponentModel.DoWorkEventArgs e)
+        private String GetUrl()
         {
+            int ch = 0;
+            switch (ch)
+            {
+                case 0: 
+                    return ConfWayForUrl();
+                case 1:
+                    return UdpUrl();
+                default:
+                    return null;
+            }
+        }
+        private void BGWorkerMain_DoWork(object sender, System.ComponentModel.DoWorkEventArgs e)
+        { 
             Thread.Sleep(3000);
             BackgroundWorker bgWorker = sender as BackgroundWorker;
             string configPath = Field.UrlForWallpaper+Field.FileName;
-            StreamReader sr = null;
-            try
-            {
-                sr = new StreamReader(configPath);
-            }
-            catch (Exception)
-            {
-                bgWorker.ReportProgress(-1);
-                return;
-            }
+            String url = GetUrl();
             int try_count = 10;
             // Timeout, millsec
             int time_out = 10000;
             // Interval, millsec
             int interval = 2000;
-            int success = 0;
-            while (true)
+            if (url == null)
             {
-                string url = sr.ReadLine();
-                if (url == null)
-                    break;
-                if (Regex.Match(url, "^\\s*$").Success)
-                    continue;
-                success = 1;
-                for (int c = 0; c < try_count; ++c)
+                bgWorker.ReportProgress(-1); // Configuration Error
+                return;
+            }
+            int success = 1;
+            for (int c = 0; c < try_count; ++c)
+            {
+                if (c > 0) // ?
+                    bgWorker.ReportProgress(c); // Error of communication with Server -- Timed Out
+                try
                 {
-                    if (c > 0)
-                        bgWorker.ReportProgress(c);
-                    try
+                    string wallpaperPath = Path.GetTempFileName();
+                    var tokenSource = new CancellationTokenSource();
+                    CancellationToken token = tokenSource.Token;
+                    var task = Task.Factory.StartNew(() => DownloadFile(url, wallpaperPath), token);
+                    if (!task.Wait(time_out, token) || !task.Result) // timed out
                     {
-                        string wallpaperPath = Path.GetTempFileName();
-                        var tokenSource = new CancellationTokenSource();
-                        CancellationToken token = tokenSource.Token;
-                        var task = Task.Factory.StartNew(() => DownloadFile(url, wallpaperPath), token);
-                        if (!task.Wait(time_out, token) || !task.Result)
-                        {
-                            Thread.Sleep(interval);
-                            continue;
-                        }
-                        SetWallpaper(wallpaperPath, Style.Stretched);
-                    }
-                    catch (Exception)
-                    {
+                        Thread.Sleep(interval);
                         continue;
                     }
-                    success = 2;
-                    break;
+                    SetWallpaper(wallpaperPath, Style.Stretched);
                 }
-                if (success == 2)
-                    break;
+                catch (Exception)
+                {
+                    continue;
+                }
+                success = 2; // set Wallpaper successfully
+                break;
             }
-            if (success == 0)
-                bgWorker.ReportProgress(-1);
-            else if (success == 1)
-                bgWorker.ReportProgress(-2);
+            if (success == 1)
+                bgWorker.ReportProgress(-2); // Communication Error
         }
-        private void backgroundWorker1_RunWorkerCompleted(object sender, System.ComponentModel.RunWorkerCompletedEventArgs e)
+        private void BGWorkerMain_RunWorkerCompleted(object sender, System.ComponentModel.RunWorkerCompletedEventArgs e)
         {
             if (!fatal)
                 Close();
         }
-        private void label3_Click(object sender, EventArgs e)
+        private void Shut_Click(object sender, EventArgs e)
         {
             Environment.Exit(0);
         }
-        private void backgroundWorker1_ProgressChanged(object sender, System.ComponentModel.ProgressChangedEventArgs e)
+        private void BGWorkerMain_ProgressChanged(object sender, System.ComponentModel.ProgressChangedEventArgs e)
         {
             if (e.ProgressPercentage == -1)
             {
@@ -178,8 +174,36 @@ namespace Client
                 MessageBox.Show("联络服务器失败", "四川大学智慧教学系统壁纸同步工具", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 Close();
             }
-            label3.Visible = true;
-            label2.Text = "错误：无法连接至服务器。当前已尝试" + e.ProgressPercentage.ToString() + "次";
+            Shut.Visible = true;
+            Title.Text = "错误：无法连接至服务器。当前已尝试" + e.ProgressPercentage.ToString() + "次";
+        }
+        private String ConfWayForUrl()
+        {
+            StreamReader sr = null;
+            try
+            {
+                sr = new StreamReader(Field.UrlForWallpaper + Field.FileName);
+            }
+            catch (Exception)
+            {
+                return null;
+            }
+            string url = null;
+            while (true)
+            {
+                url = sr.ReadLine(); // readline from conf file
+                if (url == null) // empty file
+                    break;
+                if (Regex.Match(url, "^\\s*$").Success) // empty line
+                    continue;
+            }
+            return url;
+        }
+        private String UdpUrl()
+        {
+            //todo using udp to get url
+
+            return null;
         }
     }
 }
