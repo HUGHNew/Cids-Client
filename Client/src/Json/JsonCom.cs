@@ -8,6 +8,11 @@ namespace Client {
         public static String UrlForWallpaper{get;set;}
         public static String FileName { get; }
     }
+
+    // <Summary>
+    // Field : __Field__Data
+    // use `Data` as suffix to avoid the collision of Class Name and Variable Name
+    // </Summary>
     namespace Json {
         class MirrorRequest {
             private String uuid;
@@ -43,7 +48,7 @@ namespace Client {
         namespace ReceiveComponent
         {
             // brief: Encapsulation of the Emengency Message for JSON
-            class Message
+            public class MessageData
             {
                 public string Title { get; set; }
                 public string Text { get; set; }
@@ -54,7 +59,8 @@ namespace Client {
                 }
             }
             // 事件: 代表当前的课程(教室借用情况)
-            class Event
+            
+            public class EventData
             {
                 // brief: Encapsulation of the Course Content for JSON
                 public class ContentData
@@ -77,16 +83,16 @@ namespace Client {
                 }
             }
         }
-        class MirrorReceive
+        public class MirrorReceive
         {
             public string Image_url { get; set; }
-            public List<ReceiveComponent.Message> Message { get; set; }
-            public ReceiveComponent.Event Event{ get; set; }
-            public ReceiveComponent.Event Next_event{ get; set; }
+            public List<ReceiveComponent.MessageData> Message { get; set; }
+            public ReceiveComponent.EventData Event { get; set; }
+            public ReceiveComponent.EventData Next_event { get; set; }
             private bool update;
             //public 
             public bool Update { get { return update; } set { update = value; } }
-
+            public String Time { get; set; }
             //public MirrorReceive(bool needUpdate)
             //{
             //    this.update = needUpdate;

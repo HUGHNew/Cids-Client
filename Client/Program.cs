@@ -17,12 +17,19 @@ namespace Client
         [STAThread] 
         static void Main()
         {
-            IpParse();
+
+            SendRecv();
             //t2();
             //OctBytesTest();
             //Application.EnableVisualStyles();
             //Application.SetCompatibleTextRenderingDefault(false);
             //Application.Run(new Form1());
+        }
+        static void SendRecv()
+        {
+            var Ct = new CidsClient("1234567","192.168.233.14");
+            Ct.SendMain();
+            var json = Ct.SendMirror();
         }
         static void IpParse()
         {
