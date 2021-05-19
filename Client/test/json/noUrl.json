@@ -1,0 +1,19 @@
+{
+    "time":"121-91-20-10-32",
+    "image_url": "",
+    "message": [
+      {"Title":"EmptyMsg", "Text":"", "ExpireTime":"Min/Sec"}
+    ],// 消息列表 包含：消息的标题 内容 持续时间
+    
+    "event": { // 事件：代表当前的课程（教室借用情况）
+      "ExpireTime":"", //持续时间
+      "Contents":"",    //课程内容
+      "color":"blue"    //可以一定程度修改颜色？（或者改成type也行）
+    },
+    "next_event":{
+      "ExpireTime":"",
+      "Contents":"",
+      "color":"blue"
+    },
+    "needUpdate": true //是否需要更新
+}

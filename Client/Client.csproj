@@ -60,6 +60,7 @@
     <Compile Include="src\Socket.cs" />
     <Compile Include="src\Time.cs" />
     <Compile Include="src\Toast.cs" />
+    <Compile Include="test\JsonTest.cs" />
     <EmbeddedResource Include="Form1.resx">
       <DependentUpon>Form1.cs</DependentUpon>
     </EmbeddedResource>
@@ -82,6 +83,11 @@
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
     <None Include="test\json\empty.json" />
+    <None Include="test\json\emptyMsg.json" />
+    <None Include="test\json\lastEvent.json" />
+    <None Include="test\json\min.json" />
+    <None Include="test\json\NoUpdate.json" />
+    <None Include="test\json\noUrl.json" />
     <None Include="test\json\recv.json" />
     <None Include="test\json\t0.json" />
   </ItemGroup>

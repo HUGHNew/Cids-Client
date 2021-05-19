@@ -74,7 +74,8 @@ namespace Client {
                 // 持续时间
                 public string ExpireTime { get; set; }
                 // 课程内容
-                public ContentData Contents { get; set; }
+                //public ContentData Contents { get; set; }
+                public String Contents { get; set; }
                 // 颜色
                 public string Color { get; set; }
                 public override string ToString()
@@ -89,10 +90,12 @@ namespace Client {
             public List<ReceiveComponent.MessageData> Message { get; set; }
             public ReceiveComponent.EventData Event { get; set; }
             public ReceiveComponent.EventData Next_event { get; set; }
-            private bool update;
             //public 
-            public bool Update { get { return update; } set { update = value; } }
+            public bool NeedUpdate { get; set; }
             public String Time { get; set; }
+            public override String ToString() {
+                return Newtonsoft.Json.JsonConvert.SerializeObject(this);
+            }
             //public MirrorReceive(bool needUpdate)
             //{
             //    this.update = needUpdate;

@@ -18,7 +18,8 @@ namespace Client
         static void Main()
         {
 
-            SendRecv();
+            JsonTest.test();
+            //SendRecv();
             //t2();
             //OctBytesTest();
             //Application.EnableVisualStyles();

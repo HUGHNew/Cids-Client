@@ -56,7 +56,7 @@ namespace Client
 			for(int i = 0; i < times; ++i)
             {
 				Client.Send(data, bytes, end);
-				System.Threading.Thread.Sleep(DelayBetweenSending);
+				System.Threading.Thread.Sleep(ClientTool.DelayBetweenSending);
             }
         }
 		//
@@ -146,7 +146,7 @@ namespace Client
 					Console.WriteLine(MRecv);
 				}
 				System.Threading.Interlocked.Increment(ref success);
-                if (RecvJson.Update) // update needed
+                if (RecvJson.NeedUpdate) // update needed
                 {
 					lastTime = RecvJson.Time;
 

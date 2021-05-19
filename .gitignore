@@ -3,3 +3,6 @@ Client/bin
 
 # not essential config file
 .vs
+
+# script snippt for push
+push
