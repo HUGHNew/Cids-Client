@@ -24,8 +24,9 @@ namespace Client
 		}
 		public static String ComposeMirrorRequest(String id,String Last) {
 			String time=Last ?? "null";
-			return $"{{\"UUID\":\"{id}\",\"time\":\"{time}\"}}";
+			return $"{{\"UUID\":\"{id}\",\"time\":{time}}}";
 		}
+		//public static String GetIp() { }
     }
 	public class CidsClient
 	{
@@ -41,7 +42,8 @@ namespace Client
 		public CidsClient(String uuid,String Server,bool test=true)
         {
 			MainServer = IPAddress.Parse(Server);
-			Client = new UdpClient(new IPEndPoint(IPAddress.Any,65500));
+			//Client = new UdpClient(new IPEndPoint(IPAddress.Any,65500)); // something may err here
+			Client = new UdpClient();
 			this.uuid = uuid;
 			this.Test = test;
         }
@@ -49,6 +51,7 @@ namespace Client
         {
 			MainServer = server == null ? DefaultMServer : IPAddress.Parse(server);
 			Client = new UdpClient();
+			//Client.Connect(MainServer, MainPort);
 			GetUUID();
 		}
 		private void SendTimes(byte[]data,int bytes,IPEndPoint end,int times= DefaultPackageNumber)
@@ -121,10 +124,11 @@ namespace Client
 				{
 					++SendTime;
 				}
-			} while (GetMirrorIp == 0);
+			} while (System.Threading.Interlocked.Equals(GetMirrorIp,0));
 		}
 		public Json.MirrorReceive SendMirror()
         {
+			//Client.Connect(IPAddress.Parse(MirrorIP), MirrorPort); 
 			Json.MirrorReceive RecvJson=null;
 			IPEndPoint remote = new IPEndPoint(IPAddress.Parse(MirrorIP), MirrorPort);
 			int success = 0;
@@ -136,7 +140,11 @@ namespace Client
 				}
 				// get Mirror Response
 				// get Update Information
-				byte[] JsonText = Client.Receive(ref remote);
+				byte[] JsonText=null;
+                while (JsonText == null || JsonText.Length == 4) // throw the extra Ip packages
+                {
+					JsonText = Client.Receive(ref remote);
+                }
 				// convert to string
 				String MRecv = System.Text.Encoding.UTF8.GetString(JsonText);
 				RecvJson = JsonConvert.DeserializeObject<Json.MirrorReceive>(MRecv);
@@ -160,7 +168,7 @@ namespace Client
 				// Sleep Set
 				SendTimes(JsonBytes,JsonBytes.Length,remote);
 				System.Threading.Thread.Sleep(ClientTool.NextInt % 2000 + 3000); // 3-5 seconds
-            } while (success == 0);
+            } while (System.Threading.Interlocked.Equals(success, 0));
 			return RecvJson;
 		}
 

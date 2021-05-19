@@ -15,7 +15,13 @@ namespace Client
         [STAThread] 
         static void Main()
         {
-            connect();
+            System.Threading.Thread clt = new System.Threading.Thread(Clt);
+            System.Threading.Thread svr = new System.Threading.Thread(connect);
+            svr.Start();
+            System.Threading.Thread.Sleep(1000);
+            clt.Start();
+            clt.Join();
+            svr.Join();
             //JsonTest.test();
             //SendRecv();
             //t2();
@@ -24,32 +30,19 @@ namespace Client
             //Application.SetCompatibleTextRenderingDefault(false);
             //Application.Run(new Form1());
         }
+        
         static void connect()
         {
             //File.Create("../../test/connect.log");
-            System.Threading.Thread t0 = new System.Threading.Thread(Ct);
-            t0.Start();
             UdpServer us = new UdpServer();
             us.ServerOn();
-            t0.Join();
         }
-        static void Ct()
+        static void Clt()
         {
             var Ct = new CidsClient("1234567", "127.0.0.1",false);
             Ct.SendMain();
             var json = Ct.SendMirror();
-            //FileStream Fs=File.Open("../../test/client.log", FileMode.OpenOrCreate | FileMode.Append);
-            //Console.WriteLine($"time:{json.Time}");
             File.WriteAllText("../../test/connect.log", $"time:{json.Time}");
-
-            //try
-            //{
-            //    //Console.WriteLine(Directory.GetCurrentDirectory());
-            //}
-            //catch (Exception)
-            //{
-            //    //Console.WriteLine("Error Here");
-            //}
         }
         static void SendRecv()
         {
