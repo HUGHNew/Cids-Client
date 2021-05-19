@@ -38,12 +38,12 @@ namespace Client
 		private const String IdConfFile = "C:/";
 		public const int DefaultPackageNumber = 10;
 		private readonly bool Test = false;
-		public CidsClient(String uuid,String Server)
+		public CidsClient(String uuid,String Server,bool test=true)
         {
 			MainServer = IPAddress.Parse(Server);
-			Client = new UdpClient();
+			Client = new UdpClient(new IPEndPoint(IPAddress.Any,65500));
 			this.uuid = uuid;
-			this.Test = true;
+			this.Test = test;
         }
         public CidsClient(String server=null)
         {
@@ -149,7 +149,6 @@ namespace Client
                 if (RecvJson.NeedUpdate) // update needed
                 {
 					lastTime = RecvJson.Time;
-
                 }
 			});
 
