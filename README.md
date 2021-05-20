@@ -13,3 +13,8 @@
 - [] Form Refactor
   - [x] High Coupling now
   - [ ] Run with the other module
+
+## Update
+
+1. Migrate to Windows Service Framework
+2. Update the photo process intelligently
