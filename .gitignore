@@ -1,6 +1,9 @@
 # binary files
 Client/bin
 
+# image
+Client/test/img
+#
 # not essential config file
 .vs
 
