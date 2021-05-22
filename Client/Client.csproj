@@ -57,6 +57,7 @@
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="src\Image.cs" />
+    <Compile Include="test\ImgTest.cs" />
     <Compile Include="test\UdpServerTest.cs" />
     <Compile Include="src\Json\JsonCom.cs" />
     <Compile Include="src\Socket.cs" />

@@ -15,13 +15,7 @@ namespace Client
         [STAThread] 
         static void Main()
         {
-            System.Threading.Thread clt = new System.Threading.Thread(Clt);
-            System.Threading.Thread svr = new System.Threading.Thread(connect);
-            svr.Start();
-            System.Threading.Thread.Sleep(1000);
-            clt.Start();
-            clt.Join();
-            svr.Join();
+            imgt0();
             //JsonTest.test();
             //SendRecv();
             //t2();
@@ -30,7 +24,20 @@ namespace Client
             //Application.SetCompatibleTextRenderingDefault(false);
             //Application.Run(new Form1());
         }
-        
+        static void imgt0()
+        {
+            ImgTest.t0();
+        }
+        static void localCS()
+        {
+            System.Threading.Thread clt = new System.Threading.Thread(Clt);
+            System.Threading.Thread svr = new System.Threading.Thread(connect);
+            svr.Start();
+            System.Threading.Thread.Sleep(1000);
+            clt.Start();
+            clt.Join();
+            svr.Join();
+        }
         static void connect()
         {
             //File.Create("../../test/connect.log");
