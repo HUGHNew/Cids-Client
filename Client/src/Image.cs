@@ -43,11 +43,13 @@ namespace Client
             }
             public void DrawImageSaveAs(System.Drawing.Image img, string savePath)
             {
+                const int dem= 50;
                 Graphics g = Graphics.FromImage(img);
                 int wid = img.Width, hei = img.Height;
-                int thick = wid/400, fontSize = wid/1000; // 笔刷粗度, 字体大小
-                Font boldFont = new Font("黑体", fontSize, FontStyle.Bold);
-                Font regularFont = new Font("黑体", fontSize, FontStyle.Regular);
+                // font size 10%
+                int thick = wid/dem, fontSize = wid/dem; // 笔刷粗度, 字体大小
+                Font boldFont = new Font("黑体", fontSize, FontStyle.Bold,GraphicsUnit.Pixel);
+                Font regularFont = new Font("黑体", fontSize, FontStyle.Regular, GraphicsUnit.Pixel);
                 Pen pen = new Pen(head.frameClr, thick);
                 pen.Alignment = System.Drawing.Drawing2D.PenAlignment.Inset;
                 Rectangle rec;
