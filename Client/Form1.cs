@@ -55,6 +55,8 @@ namespace Client
         const int SPIF_UPDATEINIFILE = 0x01;
         const int SPIF_SENDWININICHANGE = 0x02;
 
+        private Json.MirrorReceive data;
+
         [DllImport("user32.dll", CharSet = CharSet.Auto)]
         static extern int SystemParametersInfo(int uAction, int uParam, string lpvParam, int fuWinIni); // for Wallpaper Set
         private enum Style : int
@@ -136,7 +138,9 @@ namespace Client
                         Thread.Sleep(interval);
                         continue;
                     }
-                    SetWallpaper(wallpaperPath, Style.Stretched);
+                    // something to do here before set
+                    string wallpaper = Image.CourceBoxes.GraphicsCompose(wallpaperPath,data);
+                    SetWallpaper(wallpaper, Style.Stretched);
                 }
                 catch (Exception)
                 {
@@ -202,7 +206,7 @@ namespace Client
         private String UdpUrl()
         {
             //todo using udp to get url
-
+            Console.WriteLine("TODO in UdpUrl function");
             return null;
         }
     }

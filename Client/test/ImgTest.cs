@@ -8,7 +8,7 @@ namespace Client
         public const string filepath = "../../test/img/";
         public static void t0()
         {
-            for(int i = 0; i < 3; ++i)
+            for(int i = 0; i < 4; ++i)
             {
                 CourceBoxes cb = new CourceBoxes();
                 cb.Add(new CourceBoxes.Cource("正方形打野", Color.Black, "直播间：606118", Color.Red, "韩金轮", Color.Green, Color.DarkGray, Color.LightGray));
