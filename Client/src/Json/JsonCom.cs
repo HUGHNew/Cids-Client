@@ -52,7 +52,7 @@ namespace Client {
             {
                 public string Title { get; set; }
                 public string Text { get; set; }
-                public string ExpireTime { get; set; } //Min/Sec
+                public int ExpireTime { get; set; } //Sec
                 public override string ToString()
                 {
                     return "Title:"+Title+"\tText:"+Text+"\tExpireTime:"+ ExpireTime;
@@ -62,25 +62,38 @@ namespace Client {
             
             public class EventData
             {
-                // brief: Encapsulation of the Course Content for JSON
-                public class ContentData
+                // 课程号
+                public string Kch { get; set; }
+                // 课序号
+                public int Kxh { get; set; }
+                // 课程名
+                public string Kcm { get; set; }
+                // 教师姓名
+                public string Jsxm { get; set; }
+                // 教学地点
+                public string Jxdd { get; set; }
+                public ReadableEvent GetReadable()
                 {
-                    public string Content { get; set; }
-                    public override string ToString()
-                    {
-                        return Content;
-                    }
+                    return new ReadableEvent(Kcm, Kxh, Jsxm);
                 }
-                // 持续时间
-                public string ExpireTime { get; set; }
-                // 课程内容
-                //public ContentData Contents { get; set; }
-                public String Contents { get; set; }
-                // 颜色
-                public string Color { get; set; }
+
                 public override string ToString()
                 {
-                    return "ExpireTime:"+ ExpireTime+ "\tContents:"+Contents.ToString();
+                    return "课程号:"+ Kch+ "\t课序号:"+Kxh+"\t课程名:"+Kcm
+                            +"\n教师姓名:"+Jsxm+"\t教室地点:"+Jxdd;
+                }
+            }
+            public class ReadableEvent
+            {
+                public string CourseTitle { get; set; } // 课程名
+                public int CourseNo { get; set; } // 课序号
+                public string Professor { get; set; } // 教师名
+
+                public ReadableEvent(string title,int number,string teacher)
+                {
+                    CourseTitle = title;
+                    CourseNo = number;
+                    Professor = teacher;
                 }
             }
         }

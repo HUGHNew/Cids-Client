@@ -1,15 +1,43 @@
 ﻿using System;
+using Windows.Foundation;
 
 namespace Client
 {
     public class JsonTest
     {
-        // test class for json
-        public static void test()
+        public static void newlytest()
         {
-            string prefix="../../test/json/";
-            string log = "json.log";
-            string[] files = { "NoUpdate.json",  "emptyMsg.json", "lastEvent.json", "min.json", "noUrl.json", "recv.json" };
+            test("recity.json");
+        }
+        // test class for json
+        public static string prefix="../../test/json/";
+        public static string log = "json.log";
+        public static string[] defaults = { "NoUpdate.json", "emptyMsg.json", "lastEvent.json", "min.json", "noUrl.json", "recv.json" };
+        public static void test(string file, System.IO.StreamWriter writer, out Json.MirrorReceive receive)
+        {
+            Console.WriteLine($"In file : {file}");
+            receive = Newtonsoft.Json.JsonConvert.DeserializeObject<Json.MirrorReceive>(System.IO.File.ReadAllText(prefix + file));
+            if (receive.NeedUpdate)
+            {
+                Console.WriteLine($"Url:{receive.Image_url}\nEvent-Teacher:{receive.Event.Jsxm}");
+                if (receive.Message.Count > 0)
+                {
+                    Console.WriteLine($"Msg[0]-ExpireTime|Second:{receive.Message[0].ExpireTime}");
+                }
+                Console.WriteLine($"Next-Event-CourseNo:{receive.Next_event.Kxh}");
+            }
+            else
+            {
+                Console.WriteLine("not update");
+            }
+            //writer.WriteLine(receive.ToString());
+        }
+        public static void test(string file) {
+            string[] files = { file };
+            test(files);
+        }
+        public static void test(string[] files)
+        {
             Json.MirrorReceive receive;
             System.IO.StreamWriter writer = new System.IO.StreamWriter(prefix + log);
             try { System.IO.File.Open(prefix + log, System.IO.FileMode.OpenOrCreate | System.IO.FileMode.Append);
@@ -20,22 +48,7 @@ namespace Client
             }
             foreach (string file in files)
             {
-                Console.WriteLine($"In file : {file}");
-                //writer.WriteLine($"In file : {file}");
-                receive = Newtonsoft.Json.JsonConvert.DeserializeObject<Json.MirrorReceive>(System.IO.File.ReadAllText(prefix + file));
-                if (receive.NeedUpdate)
-                {
-                    Console.WriteLine($"Url:{receive.Image_url}\nEvent-Color:{receive.Event.Color}");
-                    if (receive.Message.Count > 0)
-                    {
-                        Console.WriteLine($"Msg[0]-Title:{receive.Message[0].Title}");
-                    }
-                    Console.WriteLine($"Next-Event-Color:{receive.Next_event.Color??""}");
-                }
-                else
-                {
-                    Console.WriteLine("not update");
-                }
+                test(file, writer,out receive);
                 //writer.WriteLine(receive.ToString());
             }writer.Close();
 

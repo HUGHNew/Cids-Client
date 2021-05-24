@@ -15,7 +15,9 @@ namespace Client
         [STAThread] 
         static void Main()
         {
+
             imgt0();
+            //JsonTest.newlytest();
             //JsonTest.test();
             //SendRecv();
             //t2();

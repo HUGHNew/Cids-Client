@@ -8,6 +8,38 @@ namespace Client
 
     namespace Image
     {
+        // reference : <https://coolors.co/palettes/trending>
+        class ColorSchemes
+        {
+            // trend : B -> G -> R
+            static public readonly Color[] SchemeOne = { // soft and old fashion
+                Color.FromArgb(0x26,0x46,0x53),
+                Color.FromArgb(0x2A,0x9D,0x8F),
+                Color.FromArgb(0xE9,0xC4,0x6A),
+                Color.FromArgb(0xF4,0xA2,0x61),
+                Color.FromArgb(0xE7,0x6F,0x51),
+            };
+            static public readonly Color[] SchemeTwo = { // gradient
+                Color.FromArgb(0x8E,0xCA,0xE6),
+                Color.FromArgb(0x21,0x9E,0xBC),
+                Color.FromArgb(0x2,0x30,0x47),
+                Color.FromArgb(0xFF,0xB7,0x3),
+                Color.FromArgb(0xEB,0x85,0),
+            };
+            static public readonly Color[] SchemeThree = { // High contrast
+                Color.FromArgb(0,0,0),
+                Color.FromArgb(0x14,0x21,0x3D),
+                Color.FromArgb(0xFC,0xA3,0x11),
+                Color.FromArgb(0xE5,0xE5,0xE5),
+                Color.FromArgb(0xFF,0xFF,0XFF),
+            };
+        }
+        class Opacity {
+            public const int max = 255;
+            public const int back = 100;
+            public const int frame = back+back>>1;
+            public const int text = 250;
+        }
         class CourceBoxes
         {
             public int Size{get; private set; }
@@ -18,6 +50,19 @@ namespace Client
             }
             public struct Cource
             {
+                public Cource(Json.ReceiveComponent.ReadableEvent readable,Color[]scheme= null)
+                {
+                    scheme= scheme ?? ColorSchemes.SchemeThree;
+                    titleStr = readable.CourseTitle;
+                    idStr = readable.CourseNo.ToString();
+                    teacherStr = readable.Professor;
+                    backClr = Color.FromArgb(Opacity.back, scheme[0]);
+                    frameClr= Color.FromArgb(Opacity.frame, scheme[1]);
+                    idClr = Color.FromArgb(Opacity.text, scheme[2]);
+                    teacherClr = Color.FromArgb(Opacity.text, scheme[3]);
+                    titleClr = Color.FromArgb(Opacity.text, scheme[4]);
+                }
+
                 public Cource(string titleString, Color titleColor, string idString, Color idColor, string teacherString, Color teacherColor, Color frameColor, Color backColor)
                 {
                     titleStr = titleString;
@@ -43,7 +88,10 @@ namespace Client
                     Cources.Add(c);
                 ++Size;
             }
-            public void DrawImageSaveAs(System.Drawing.Image img, string savePath)
+            // 参数:
+            //  regularRate :   常规当前事件的大小
+            //  subShrink   :   下一条事件相对于当前的缩放比例
+            public void DrawImageSaveAs(System.Drawing.Image img, string savePath,double regularRate=0.3,double subShrink=0.8)
             {
                 Graphics g = Graphics.FromImage(img);
                 int imgWidth = img.Width, imgHeight = img.Height;
@@ -61,18 +109,21 @@ namespace Client
                 Size headBoxWH, boxWH; // 长宽
 
                 // 30%
-                headBoxWH = new Size(Convert.ToInt32(imgWidth * 0.3), Convert.ToInt32(imgHeight * 0.3));
-                boxPoint = new Point(Convert.ToInt32(imgWidth * 0.7), 0);
+                headBoxWH = new Size(Convert.ToInt32(imgWidth * regularRate), Convert.ToInt32(imgHeight * regularRate));
+                boxPoint = new Point(Convert.ToInt32(imgWidth * (1-regularRate)), 0); // put top-right
 
-                rec = new Rectangle( boxPoint,headBoxWH );
+                rec = new Rectangle(boxPoint,headBoxWH);
                 DrawRectangle(ref g, head,ref rec, pen, thick);
 
                 int leftPadding = Convert.ToInt32(rec.Width * 0.02);
 
                 DrawText(ref g, head, rec, leftPadding, boldFont, regularFont);
 
-                boxWH = new Size(Convert.ToInt32(imgWidth * 0.2), Convert.ToInt32(imgHeight * 0.2));
-                boxPoint.X = Convert.ToInt32(imgWidth * 0.8);
+                // Shrink by the rate
+                boldFont = new Font("黑体", Convert.ToInt32(fontSize * subShrink), FontStyle.Bold, GraphicsUnit.Pixel);
+                regularFont = new Font("黑体", Convert.ToInt32(fontSize * subShrink), FontStyle.Regular, GraphicsUnit.Pixel);
+                boxWH = new Size(Convert.ToInt32(imgWidth * regularRate*subShrink), Convert.ToInt32(imgHeight * regularRate * subShrink));
+                boxPoint.X = Convert.ToInt32(imgWidth * (1-regularRate*subShrink));
                 boxPoint.Y = headBoxWH.Height;
                 foreach (Cource c in Cources)
                 {
