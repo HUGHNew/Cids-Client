@@ -82,6 +82,7 @@ namespace Client
 
             public void Add(Cource c)
             {
+                if (c.idStr == "0") return; // the empty one
                 if (Size == 0)
                     head = c;
                 else
@@ -125,7 +126,7 @@ namespace Client
                 boxWH = new Size(Convert.ToInt32(imgWidth * regularRate*subShrink), Convert.ToInt32(imgHeight * regularRate * subShrink));
                 boxPoint.X = Convert.ToInt32(imgWidth * (1-regularRate*subShrink));
                 boxPoint.Y = headBoxWH.Height;
-                foreach (Cource c in Cources)
+                foreach (Cource c in Cources) // safe if empty
                 {
                     pen.Color = c.frameClr;
                     rec = new Rectangle(boxPoint, boxWH);
@@ -170,8 +171,13 @@ namespace Client
             //      返回 图片路径名
             public static string GraphicsCompose(string picture, Json.MirrorReceive data)
             {
-                Console.WriteLine("TODO in GraphicsCompose function");
-                return null;
+                CourceBoxes boxes = new CourceBoxes();
+                boxes.Add(new Cource(data.Event.GetReadable()));
+                boxes.Add(new Cource(data.Next_event.GetReadable()));
+                //Console.WriteLine("TODO in GraphicsCompose function");
+                string destPic = Time.now()+".png"; // timestamp.png
+                boxes.DrawImageSaveAs(new Bitmap(picture, true),destPic);
+                return destPic;
             }
         };
     }

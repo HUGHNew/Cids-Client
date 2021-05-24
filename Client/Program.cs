@@ -15,8 +15,8 @@ namespace Client
         [STAThread] 
         static void Main()
         {
-
-            imgt0();
+            emptyList();
+            //imgt0();
             //JsonTest.newlytest();
             //JsonTest.test();
             //SendRecv();
@@ -25,6 +25,13 @@ namespace Client
             //Application.EnableVisualStyles();
             //Application.SetCompatibleTextRenderingDefault(false);
             //Application.Run(new Form1());
+        }
+        static void emptyList()
+        {
+            System.Collections.Generic.List<string> ls = new System.Collections.Generic.List<string>();
+            foreach(string str in ls){
+                Console.WriteLine(str);
+            }
         }
         static void imgt0()
         {

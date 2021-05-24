@@ -19,12 +19,14 @@ namespace Client
             receive = Newtonsoft.Json.JsonConvert.DeserializeObject<Json.MirrorReceive>(System.IO.File.ReadAllText(prefix + file));
             if (receive.NeedUpdate)
             {
-                Console.WriteLine($"Url:{receive.Image_url}\nEvent-Teacher:{receive.Event.Jsxm}");
-                if (receive.Message.Count > 0)
-                {
-                    Console.WriteLine($"Msg[0]-ExpireTime|Second:{receive.Message[0].ExpireTime}");
-                }
-                Console.WriteLine($"Next-Event-CourseNo:{receive.Next_event.Kxh}");
+                Console.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(receive.Event.GetReadable()));
+                Console.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(receive.Next_event.GetReadable()));
+                //Console.WriteLine($"Url:{receive.Image_url}\nEvent-Teacher:{receive.Event.Jsxm}");
+                //if (receive.Message.Count > 0)
+                //{
+                //    Console.WriteLine($"Msg[0]-ExpireTime|Second:{receive.Message[0].ExpireTime}");
+                //}
+                //Console.WriteLine($"Next-Event-CourseNo:{receive.Next_event.Kxh}");
             }
             else
             {
