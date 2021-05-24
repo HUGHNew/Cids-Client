@@ -1,15 +1,15 @@
 ## To-Do
 
-- [] JSON Classes
+- [x] JSON Classes
     - [x] definition
     - [x] test
-    - [ ] remain to change field
+    - [x] remain to change field
 - [x] UDP Socket Communication
   - [x] UDP test server
-- [] Graphic/bitmap Generation
+- [x] Graphic/bitmap Generation
   - [x] Got Image Cs File
-  - [] Test
-  - [] Refactor
+  - [x] Test
+  - [x] Refactor
 - [] Form Refactor
   - [x] High Coupling now
   - [ ] Run with the other module
