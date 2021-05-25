@@ -6,10 +6,11 @@
     - [x] remain to change field
 - [x] UDP Socket Communication
   - [x] UDP test server
-- [x] Graphic/bitmap Generation
+- [] Graphic/bitmap Generation
   - [x] Got Image Cs File
   - [x] Test
   - [x] Refactor
+  - [] raw image based change
 - [] Form Refactor
   - [x] High Coupling now
   - [ ] Run with the other module
