@@ -18,3 +18,4 @@
 
 1. Migrate to Windows Service Framework
 2. Update the photo process intelligently
+3. Log System for processing

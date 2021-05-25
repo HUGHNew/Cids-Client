@@ -15,11 +15,11 @@ namespace Client
         [STAThread] 
         static void Main()
         {
+            scatter();
+            //tmptest();
+            RegisrtyTest();
             //emptyList();
             //imgt0();
-            Console.WriteLine(((Environment.GetEnvironmentVariables(EnvironmentVariableTarget.User)["ProgramFiles"] as string)?.Replace('\\', '/') ?? "") + "/CIDS");
-            Console.WriteLine(((Environment.GetEnvironmentVariables(EnvironmentVariableTarget.Process)["ProgramFiles"] as string)?.Replace('\\', '/') ?? "") + "/CIDS");
-            Console.WriteLine(((Environment.GetEnvironmentVariables(EnvironmentVariableTarget.Machine)["ProgramFiles"] as string)?.Replace('\\', '/') ?? "") + "/CIDS");
             //JsonTest.newlytest();
             //JsonTest.test();
             //SendRecv();
@@ -28,6 +28,30 @@ namespace Client
             //Application.EnableVisualStyles();
             //Application.SetCompatibleTextRenderingDefault(false);
             //Application.Run(new Form1());
+        }
+        static void tmptest()
+        {
+            string tmp=(Environment.GetEnvironmentVariables(EnvironmentVariableTarget.Machine)["TMP"] as string);
+            Console.WriteLine(tmp);
+            try
+            {
+                File.Create(Path.Combine(tmp ,"tmp.txt"));
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("Create Failed:"+e.Message);
+            }
+        }
+        static void RegisrtyTest()
+        {
+            Init.Configuration();
+        }
+        static void scatter(string field="TMP")
+        {
+            Console.WriteLine((Environment.GetEnvironmentVariables(EnvironmentVariableTarget.User)[field] as string));
+            Console.WriteLine((Environment.GetEnvironmentVariables(EnvironmentVariableTarget.Process)[field] as string));
+            Console.WriteLine((Environment.GetEnvironmentVariables(EnvironmentVariableTarget.Machine)[field] as string));
+            //Console.WriteLine(Path.Combine("dir","file"));
         }
         static void emptyList()
         {

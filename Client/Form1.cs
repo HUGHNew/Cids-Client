@@ -3,7 +3,6 @@ using System.Drawing;
 using System.IO;
 using System.Net.Security;
 using System.Net;
-using System.Reflection.Emit;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography.X509Certificates;
 using System.Text.RegularExpressions;
@@ -12,14 +11,13 @@ using System.Threading;
 using System;
 using System.Windows.Forms;
 using Microsoft.Win32;
-using System.Security.Policy;
 
 namespace Client
 {
     public partial class Form1 : Form
     {
         bool fatal = false;
-
+        //public const string ClientTitle = "四川大学智慧教学系统壁纸同步工具";
         const int SPI_SETDESKWALLPAPER = 20;
         const int SPIF_UPDATEINIFILE = 0x01;
         const int SPIF_SENDWININICHANGE = 0x02;
@@ -68,9 +66,9 @@ namespace Client
             switch (choice)
             {
                 case 0: 
-                    return ConfWayForUrl();
-                case 1:
                     return UdpUrl();
+                case 1:
+                    return ConfWayForUrl();
                 default:
                     return null;
             }
@@ -129,14 +127,14 @@ namespace Client
                 fatal = true;
                 Visible = false;
                 MessageBox.Show("读取配置文件失败\n请检查 "+Field.UrlForWallpaper+Field.FileName,
-                    "四川大学智慧教学系统壁纸同步工具", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    Init.ClientTitle, MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 Close();
             }
             else if (e.ProgressPercentage == -2)
             {
                 fatal = true;
                 Visible = false;
-                MessageBox.Show("联络服务器失败", "四川大学智慧教学系统壁纸同步工具", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("联络服务器失败", Init.ClientTitle, MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 Close();
             }
             Shut.Visible = true;

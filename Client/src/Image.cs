@@ -8,6 +8,7 @@ namespace Client
 
     namespace Image
     {
+        #region Tool Classes about color and opacity scheme
         // reference : <https://coolors.co/palettes/trending>
         class ColorSchemes
         {
@@ -40,6 +41,7 @@ namespace Client
             public const int frame = back+back>>1;
             public const int text = 250;
         }
+        #endregion
         class CourceBoxes
         {
             public int Size{get; private set; }
