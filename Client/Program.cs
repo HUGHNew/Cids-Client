@@ -15,8 +15,11 @@ namespace Client
         [STAThread] 
         static void Main()
         {
-            emptyList();
+            //emptyList();
             //imgt0();
+            Console.WriteLine(((Environment.GetEnvironmentVariables(EnvironmentVariableTarget.User)["ProgramFiles"] as string)?.Replace('\\', '/') ?? "") + "/CIDS");
+            Console.WriteLine(((Environment.GetEnvironmentVariables(EnvironmentVariableTarget.Process)["ProgramFiles"] as string)?.Replace('\\', '/') ?? "") + "/CIDS");
+            Console.WriteLine(((Environment.GetEnvironmentVariables(EnvironmentVariableTarget.Machine)["ProgramFiles"] as string)?.Replace('\\', '/') ?? "") + "/CIDS");
             //JsonTest.newlytest();
             //JsonTest.test();
             //SendRecv();

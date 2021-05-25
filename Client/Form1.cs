@@ -12,50 +12,20 @@ using System.Threading;
 using System;
 using System.Windows.Forms;
 using Microsoft.Win32;
+using System.Security.Policy;
 
 namespace Client
 {
     public partial class Form1 : Form
     {
         bool fatal = false;
-        private static bool CheckValidationResult(object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors)
-        {
-            return true;
-        }
-        private static bool DownloadFile(string URL, string filename)
-        {
-            try
-            {
-                File.Delete(filename);
-                ServicePointManager.ServerCertificateValidationCallback = new RemoteCertificateValidationCallback(CheckValidationResult);
-                HttpWebRequest Myrq = (HttpWebRequest)WebRequest.Create(URL);
-                HttpWebResponse myrp = (HttpWebResponse)Myrq.GetResponse();
-                Stream st = myrp.GetResponseStream();
-                Stream so = new FileStream(filename, FileMode.Create);
-                long totalDownloadedByte = 0;
-                byte[] by = new byte[1024];
-                int osize = st.Read(by, 0, by.Length);
-                while (osize > 0)
-                {
-                    totalDownloadedByte = osize + totalDownloadedByte;
-                    so.Write(by, 0, osize);
-                    osize = st.Read(by, 0, by.Length);
-                }
-                so.Close();
-                st.Close();
-            }
-            catch (Exception)
-            {
-                return false;
-            }
-            return true;
-        }
 
         const int SPI_SETDESKWALLPAPER = 20;
         const int SPIF_UPDATEINIFILE = 0x01;
         const int SPIF_SENDWININICHANGE = 0x02;
 
         private Json.MirrorReceive data;
+        private CidsClient UdpClient;
 
         [DllImport("user32.dll", CharSet = CharSet.Auto)]
         static extern int SystemParametersInfo(int uAction, int uParam, string lpvParam, int fuWinIni); // for Wallpaper Set
@@ -93,10 +63,9 @@ namespace Client
             InitializeComponent();
             BGWorkerMain.RunWorkerAsync();
         }
-        private String GetUrl()
+        private String GetUrl(int choice=0)
         {
-            int ch = 0;
-            switch (ch)
+            switch (choice)
             {
                 case 0: 
                     return ConfWayForUrl();
@@ -110,7 +79,7 @@ namespace Client
         { 
             Thread.Sleep(3000);
             BackgroundWorker bgWorker = sender as BackgroundWorker;
-            string configPath = Field.UrlForWallpaper+Field.FileName;
+            UdpClient = new CidsClient();
             String url = GetUrl();
             int try_count = 10;
             // Timeout, millsec
@@ -129,18 +98,10 @@ namespace Client
                     bgWorker.ReportProgress(c); // Error of communication with Server -- Timed Out
                 try
                 {
-                    string wallpaperPath = Path.GetTempFileName();
-                    var tokenSource = new CancellationTokenSource();
-                    CancellationToken token = tokenSource.Token;
-                    var task = Task.Factory.StartNew(() => DownloadFile(url, wallpaperPath), token);
-                    if (!task.Wait(time_out, token) || !task.Result) // timed out
+                    if (DownloadAndSet(url, time_out, interval) == false)
                     {
-                        Thread.Sleep(interval);
                         continue;
                     }
-                    // something to do here before set
-                    string wallpaper = Image.CourceBoxes.GraphicsCompose(wallpaperPath,data);
-                    SetWallpaper(wallpaper, Style.Stretched);
                 }
                 catch (Exception)
                 {
@@ -181,6 +142,7 @@ namespace Client
             Shut.Visible = true;
             Title.Text = "错误：无法连接至服务器。当前已尝试" + e.ProgressPercentage.ToString() + "次";
         }
+        #region Ways for Url
         private String ConfWayForUrl()
         {
             StreamReader sr = null;
@@ -206,8 +168,61 @@ namespace Client
         private String UdpUrl()
         {
             //todo using udp to get url
-            Console.WriteLine("TODO in UdpUrl function");
-            return null;
+            return UdpClient.SendMain();
         }
+        #endregion
+        #region Download and Set Wallpaper
+        private static bool CheckValidationResult(object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors)
+        {
+            return true;
+        }
+        private static bool DownloadFile(string URL, string filename)
+        {
+            try
+            {
+                File.Delete(filename);
+                ServicePointManager.ServerCertificateValidationCallback = new RemoteCertificateValidationCallback(CheckValidationResult);
+                HttpWebRequest Myrq = (HttpWebRequest)WebRequest.Create(URL);
+                HttpWebResponse myrp = (HttpWebResponse)Myrq.GetResponse();
+                Stream st = myrp.GetResponseStream();
+                Stream so = new FileStream(filename, FileMode.Create);
+                long totalDownloadedByte = 0;
+                byte[] by = new byte[1024];
+                int osize = st.Read(by, 0, by.Length);
+                while (osize > 0)
+                {
+                    totalDownloadedByte = osize + totalDownloadedByte;
+                    so.Write(by, 0, osize);
+                    osize = st.Read(by, 0, by.Length);
+                }
+                so.Close();
+                st.Close();
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+            return true;
+        }
+        private bool DownloadAndSet(String ImgUrl,int time_out,int interval)
+        {
+            #region needed to change
+            string wallpaperPath = Path.GetTempFileName(); // revise file name
+            var tokenSource = new CancellationTokenSource();
+            CancellationToken token = tokenSource.Token;
+            data = UdpClient.SendMirror();
+            var task = Task.Factory.StartNew(() => DownloadFile(ImgUrl, wallpaperPath), token); // download
+            if (!task.Wait(time_out, token) || !task.Result) // timed out
+            {
+                Thread.Sleep(interval);
+                return false;
+            }
+            // something to do here before set
+            #endregion
+            string wallpaper = Image.CourceBoxes.GraphicsCompose(wallpaperPath, data);
+            SetWallpaper(wallpaper, Style.Stretched);
+            return true;
+        }
+        #endregion
     }
 }

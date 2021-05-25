@@ -1,4 +1,6 @@
-﻿namespace Client
+﻿using Client.Properties;
+
+namespace Client
 {
     partial class Form1
     {
@@ -19,6 +21,7 @@
             }
             base.Dispose(disposing);
         }
+
 
         #region Windows 窗体设计器生成的代码
 
@@ -119,24 +122,7 @@
         private System.Windows.Forms.Label Shut;
         private System.ComponentModel.BackgroundWorker BGWorkerMain;
 
-        // Unknown Error Here
-        private void BackWorker()
-        {
 
-        }
-        private void PictureProcess()
-        {
-            
-        }
-        private void LabelTitle() {
-
-        }
-        private void LabelLoad() {
-
-        }
-        private void LabelShut() {
-
-        }
     }
 }
 

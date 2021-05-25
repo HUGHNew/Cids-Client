@@ -30,16 +30,33 @@ namespace Client
     }
 	public class CidsClient
 	{
+		#region private property
 		private readonly UdpClient Client;
-		public const int MainPort= 20800,MirrorPort=20801;
-		public readonly IPAddress DefaultMServer= IPAddress.Parse("127.0.0.1"); // Server IP need
-		public IPAddress MainServer;
         private String lastTime=null,MirrorIP=null;
 		private String uuid;
-		private const String IdConfFile = "C:/";
-		public const int DefaultPackageNumber = 10;
+		private const String IdConfFile = "id.conf";
+		private static readonly String IdConfPath = ((Environment.GetEnvironmentVariables(EnvironmentVariableTarget.Process)["ProgramFiles"] as string)
+			?? @"C:\Program Files (x86)\")+"\\CIDS\\"; // todo Here
 		private readonly bool Test = false;
-		public CidsClient(String uuid,String Server,bool test=true)
+        #endregion
+
+        #region public property
+        public const int MainPort= 20800,MirrorPort=20801;
+		public readonly IPAddress DefaultMServer= IPAddress.Parse("127.0.0.1"); // Server IP need
+		public IPAddress MainServer;
+		public const int DefaultPackageNumber = 10;
+        public String Mirror => MirrorIP;
+        #endregion
+
+        #region initilization uuid file or get uuid from conf file
+		static public bool ConfCheck()
+        {
+			// Impossible to create or change file here
+			return System.IO.File.Exists(IdConfPath+IdConfFile);
+        }
+        #endregion
+        #region constructor
+        public CidsClient(String uuid,String Server,bool test=true) // for test
         {
 			MainServer = IPAddress.Parse(Server);
 			//Client = new UdpClient(new IPEndPoint(IPAddress.Any,65500)); // something may err here
@@ -54,7 +71,9 @@ namespace Client
 			//Client.Connect(MainServer, MainPort);
 			GetUUID();
 		}
-		private void SendTimes(byte[]data,int bytes,IPEndPoint end,int times= DefaultPackageNumber)
+        #endregion
+
+        private void SendTimes(byte[]data,int bytes,IPEndPoint end,int times= DefaultPackageNumber)
         {
 			for(int i = 0; i < times; ++i)
             {
@@ -69,7 +88,7 @@ namespace Client
         {
 			System.IO.StreamReader Reader;
 			try { 
-				Reader= new System.IO.StreamReader(IdConfFile);
+				Reader= new System.IO.StreamReader(IdConfPath+IdConfFile);
             }
             catch (Exception)
             {
@@ -86,11 +105,8 @@ namespace Client
 			}
 			// access here if succeed
 		}
-		public void Startup()
-        {
-			
-        }
-		public void SendMain(byte InitSendTime=2)
+
+		public String SendMain(byte InitSendTime=2)
         {
 			int GetMirrorIp = 0;
 			byte[] Gram = ClientTool.GetOctByte(ref uuid);
@@ -125,6 +141,7 @@ namespace Client
 					++SendTime;
 				}
 			} while (System.Threading.Interlocked.Equals(GetMirrorIp,0));
+			return MirrorIP;
 		}
 		public Json.MirrorReceive SendMirror()
         {
