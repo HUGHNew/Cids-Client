@@ -34,9 +34,6 @@ namespace Client
 		private readonly UdpClient Client;
         private String lastTime=null,MirrorIP=null;
 		private String uuid;
-		private const String IdConfFile = "id.conf";
-		private static readonly String IdConfPath = ((Environment.GetEnvironmentVariables(EnvironmentVariableTarget.Process)["ProgramFiles"] as string)
-			?? @"C:\Program Files (x86)\")+"\\CIDS\\"; // todo Here
 		private readonly bool Test = false;
         #endregion
 
@@ -52,7 +49,7 @@ namespace Client
 		static public bool ConfCheck()
         {
 			// Impossible to create or change file here
-			return System.IO.File.Exists(IdConfPath+IdConfFile);
+			return System.IO.File.Exists(Init.ConfFile);
         }
         #endregion
         #region constructor
@@ -88,7 +85,7 @@ namespace Client
         {
 			System.IO.StreamReader Reader;
 			try { 
-				Reader= new System.IO.StreamReader(IdConfPath+IdConfFile);
+				Reader= new System.IO.StreamReader(Init.ConfFile);
             }
             catch (Exception)
             {

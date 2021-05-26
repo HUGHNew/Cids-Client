@@ -59,7 +59,16 @@ namespace Client
         public Form1()
         {
             InitializeComponent();
+            Conf();
             BGWorkerMain.RunWorkerAsync();
+        }
+        private static void Conf()
+        {
+            if (Init.Configuration()==false) // failed
+            {
+                MessageBox.Show(Init.ClientTitle, "配置Cids出错", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                throw new Exception(); //  terminate the whole program
+            }
         }
         private String GetUrl(int choice=0)
         {
@@ -126,7 +135,7 @@ namespace Client
             {
                 fatal = true;
                 Visible = false;
-                MessageBox.Show("读取配置文件失败\n请检查 "+Field.UrlForWallpaper+Field.FileName,
+                MessageBox.Show("读取配置文件失败\n请检查网络连接情况",
                     Init.ClientTitle, MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 Close();
             }
@@ -205,7 +214,7 @@ namespace Client
         private bool DownloadAndSet(String ImgUrl,int time_out,int interval)
         {
             #region needed to change
-            string wallpaperPath = Path.GetTempFileName(); // revise file name
+            string wallpaperPath = "";// File.Create(Init.CidsPath); // revise file name
             var tokenSource = new CancellationTokenSource();
             CancellationToken token = tokenSource.Token;
             data = UdpClient.SendMirror();
@@ -217,6 +226,7 @@ namespace Client
             }
             // something to do here before set
             #endregion
+
             string wallpaper = Image.CourceBoxes.GraphicsCompose(wallpaperPath, data);
             SetWallpaper(wallpaper, Style.Stretched);
             return true;

@@ -5,7 +5,7 @@ namespace Client
 {
 	public class ToastGenerator
 	{
-        public static Uri defaultLogoUri= new Uri("file://" + TMP + "/scu.ico");
+        public static Uri defaultLogoUri= new Uri("file:///" + TMP + "/scu.ico");
         // defaultHeroUri is no in need
 
         public static string TMP = ((Environment.GetEnvironmentVariables(EnvironmentVariableTarget.Machine)["TMP"] as string)?.Replace('\\', '/') ?? "")+"/CIDS";

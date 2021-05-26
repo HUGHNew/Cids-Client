@@ -15,7 +15,7 @@ namespace Client
         [STAThread] 
         static void Main()
         {
-            scatter();
+            //scatter();
             //tmptest();
             RegisrtyTest();
             //emptyList();

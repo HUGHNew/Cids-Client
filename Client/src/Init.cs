@@ -8,16 +8,26 @@ namespace Client
     {
         public const string ClientTitle = "四川大学智慧教学系统壁纸同步工具";
         public const string deskInitConf = "Cids.txt";
+        public const string imgName = "Cids.txt";
         public const string RegName = "Cids"; // add to registry
         public const string Conf = "Cids.conf"; // configuration file
+        // Get Set Using User Level Registry
+        public const EnvironmentVariableTarget Target = EnvironmentVariableTarget.User;
         public static readonly string desktop = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+        // for environment variable get and set
+        //private static readonly System.Collections.IDictionary EnvDic =Environment.GetEnvironmentVariables(Target); 
         // Image Stored in %TMP% file
-        public static readonly string CidsPath = ((Environment.GetEnvironmentVariables(EnvironmentVariableTarget.Machine)["TMP"] as string)
-            ?? @"C:\Windows\Temp") +"\\Cids";
-        public static readonly string ConfFile = Path.Combine(CidsPath, Conf);
+        public static readonly string CidsPath = // Get Path First
+            $"{Environment.GetEnvironmentVariable("TMP", EnvironmentVariableTarget.Machine)?? "C:\\Windows\\Temp"}\\Cids";
+        public static readonly string ConfFile = Path.Combine(CidsPath, Conf); // where to get uuid
+        private static string ValueOfCids = null;
+        //private static readonly Microsoft.Win32.RegistryKey RegKey = Microsoft.Win32.Registry.LocalMachine;
         public static bool Configuration()
         {
-            if (InitCidsInRegistry()&& DirCheckOrCreate())
+            if (Startup()) {
+                return true; 
+            }
+            if (InitCidsInRegistry()&& DirCheckOrCreate()) // add key and create dir successfully
             {
                 // Create File to store UUID
                 // Read From File:desktop\deskInitConf
@@ -44,6 +54,13 @@ namespace Client
                 }
             }return true;
         }
+        // Judge whether Registry Key and Directory created
+        public static bool Startup()
+        {
+            ValueOfCids = ValueOfCids ?? Environment.GetEnvironmentVariable(RegName, Target);
+            return Directory.Exists(CidsPath) && CidsPath.Equals(ValueOfCids);//Environment.SetEnvironmentVariable(RegName, CidsPath);
+        }
+        #region UUId and Key setup
         private static bool IdValidate(string id) {
             const char lowBound = '0',highBound='9';
             foreach (char nu in id)
@@ -75,28 +92,25 @@ namespace Client
         }
         private static bool InitCidsInRegistry(bool box=true)
         {
-            Microsoft.Win32.RegistryKey key=null;
             try {
-                string value=Microsoft.Win32.Registry.CurrentUser.GetValue(RegName) as string;
-                if (!(value?.Equals(CidsPath)??true))
+                // add new key:Cids
+                if (false == CidsPath.Equals(ValueOfCids)) // not Equals
                 {
-                    key = Microsoft.Win32.Registry.CurrentUser.CreateSubKey(RegName);
-                
-                    key.SetValue(RegName, CidsPath);
+                    Environment.SetEnvironmentVariable(RegName, CidsPath,Target);
+                    ValueOfCids = CidsPath;
                 }
             }
-            catch (Exception)
+            catch (Exception e)
             {
-                //e.Message() for log
                 if (box)
                 {
-                    MessageBox.Show("添加注册表项出错", ClientTitle, MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    MessageBox.Show("添加注册表项出错:"+e.Message, ClientTitle, MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 }
                 return false;
             }
             finally { 
-                key?.Close();
             }return true;
         }
+        #endregion
     }
 }

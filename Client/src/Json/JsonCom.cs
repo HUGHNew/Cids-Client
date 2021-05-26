@@ -5,8 +5,8 @@ namespace Client {
     class Field {
         private static readonly string urlForWallpaper = Environment.GetEnvironmentVariable("TMP");
         private const string fileName = "wallpaper_assistant_config.txt";
-        public static String UrlForWallpaper{get;}
-        public static String FileName { get; }
+        public static String UrlForWallpaper => urlForWallpaper;
+        public static String FileName => fileName;
     }
 
     // <Summary>
