@@ -20,7 +20,7 @@ namespace Client
         public static readonly string CidsPath = // Get Path First
             $"{Environment.GetEnvironmentVariable("TMP", EnvironmentVariableTarget.Machine)?? "C:\\Windows\\Temp"}\\Cids";
         public static readonly string ConfFile = Path.Combine(CidsPath, Conf); // where to get uuid
-        private static string ValueOfCids = null;
+        private static string ValueOfCids = null; // store value
         //private static readonly Microsoft.Win32.RegistryKey RegKey = Microsoft.Win32.Registry.LocalMachine;
         public static bool Configuration()
         {

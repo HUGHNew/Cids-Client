@@ -8,6 +8,26 @@ namespace Client
 
     namespace Image
     {
+        class ImageConf
+        {
+            #region Const or Readonly and Function for getting a destination file
+            public const string SaveFile = "raw.jpg";
+            public static readonly string SaveAbsPathFile = System.IO.Path.Combine(Init.CidsPath,SaveFile);
+            private static readonly string[] DstFiles = { "wp0.png", "wp1.png" };
+            private static bool UseZero = true;
+            // 摘要
+            //  将 UseZero 取反 然后返回当前值
+            private static bool Toggel()
+            {
+                UseZero = !UseZero;
+                return UseZero;
+            }
+            #endregion
+            public static string GetDestFile()
+            {
+                return DstFiles[Toggel() ? 1 : 0];
+            }
+        }
         #region Tool Classes about color and opacity scheme
         // reference : <https://coolors.co/palettes/trending>
         class ColorSchemes
@@ -35,7 +55,7 @@ namespace Client
                 Color.FromArgb(0xFF,0xFF,0XFF),
             };
         }
-        class Opacity {
+        class Opacity { // field/255
             public const int max = 255;
             public const int back = 100;
             public const int frame = back+back>>1;
@@ -165,19 +185,19 @@ namespace Client
             }
             //
             // 摘要:
-            //     获取图片路径 更改图片 生成图片路径为 时间戳.png
+            //     获取图片路径 更改图片 生成图片路径为 wp[01].png
             // 参数:
             //  picture: 下载的图片路径
             //  data   : 收到的数据
             // 返回:
             //      返回 图片路径名
-            public static string GraphicsCompose(string picture, Json.MirrorReceive data)
+            public static string GraphicsCompose(Json.MirrorReceive data, string picture)
             {
                 CourceBoxes boxes = new CourceBoxes();
                 boxes.Add(new Cource(data.Event.GetReadable()));
                 boxes.Add(new Cource(data.Next_event.GetReadable()));
                 //Console.WriteLine("TODO in GraphicsCompose function");
-                string destPic = Time.now()+".png"; // timestamp.png
+                //string destPic = Time.now()+".png"; // timestamp.png
                 boxes.DrawImageSaveAs(new Bitmap(picture, true),destPic);
                 return destPic;
             }

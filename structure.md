@@ -23,14 +23,18 @@ GetUrl --got--> Download ==Mirror==> GetJson --Join-->set--next_time-->GetJson
 Init.cs:
 
 -   Init
+    -   大量的全局变量 定义路径
 
 ### 文件和结构
 
 -   Image.cs
 -   Json
-    -   JsonCom.cs
--   Socket.cs
+    -   JsonCom.cs:Json类
+-   Socket.cs:UdpClient的实现
+    -   SendMain
+    -   SendMirror
 -   Time.cs
+    -   Get the format time string
 -   Toast.cs:对Toast消息的简单封装
     -   ToastGenerator
 
@@ -62,7 +66,10 @@ GetUrl --got--> Download ==Mirror==> GetJson --Join-->set--next_time-->GetJson
 
 -   [] 拼接的图片放在`img`下 从 0 开始编号 每次拼接后选取值最大的
 
--   [] 每次更新时删除之前的图片 把图片名 定为 `wp.png`
+-   [] 每次更新后保存两次的图片
+    -   命名为`{wp0.png,wp1.png}`
+    -   两次图片循环使用
+    -   直接复写上一次未使用文件
 
 
 
@@ -83,15 +90,18 @@ GetUrl --got--> Download ==Mirror==> GetJson --Join-->set--next_time-->GetJson
 
 ```c#
 public const string ClientTitle = "四川大学智慧教学系统壁纸同步工具";
-        public const string deskInitConf = "Cids.txt";
-        public const string imgName = "Cids.txt";
-        public const string RegName = "Cids"; // add to registry
-        public const string Conf = "Cids.conf"; // configuration file
-        public static readonly string desktop = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
-        // Image Stored in %TMP% file
-        public static readonly string CidsPath = ((Environment.GetEnvironmentVariables(EnvironmentVariableTarget.Machine)["TMP"] as string)
-            ?? @"C:\Windows\Temp") +"\\Cids";
-        public static readonly string ConfFile = Path.Combine(CidsPath, Conf);
+public const string deskInitConf = "Cids.txt";
+public const string imgName = "Cids.txt";
+public const string RegName = "Cids"; // add to registry
+public const string Conf = "Cids.conf"; // configuration file
+// Get Set Using User Level Registry
+public const EnvironmentVariableTarget Target = EnvironmentVariableTarget.User;
+public static readonly string desktop = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+// Image Stored in %TMP% file
+public static readonly string CidsPath = // Get Path First
+    $"{Environment.GetEnvironmentVariable("TMP", EnvironmentVariableTarget.Machine)?? "C:\\Windows\\Temp"}\\Cids";
+public static readonly string ConfFile = Path.Combine(CidsPath, Conf); // where to get uuid
+private static string ValueOfCids = null; // store value
 ```
 
 注册表修改
