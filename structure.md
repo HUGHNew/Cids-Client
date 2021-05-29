@@ -31,8 +31,10 @@ Init.cs:
 -   Json
     -   JsonCom.cs:Json类
 -   Socket.cs:UdpClient的实现
-    -   SendMain
-    -   SendMirror
+    -   SendMain:给Main服务器发送数据包 直到收到IP后才返回IP
+    -   SendMirror:给Mirror服务器发送数据报 直到收到数据报才会返回包含json数据类
+        -   如果一定时间内 没有任何回应 则认为Mirror挂掉
+            -   抛出异常
 -   Time.cs
     -   Get the format time string
 -   Toast.cs:对Toast消息的简单封装
@@ -44,8 +46,27 @@ Init.cs:
 
 ```mermaid
 graph TD
-首次使用判断--yes-->Init---->Main
-首次使用判断--no-->Main-->Mirror==>Mirror
+首次使用判断--yes-->Init---->Client <--QueryIp--> Main
+首次使用判断--no-->Client--HearBeat-->Mirror
+Mirror --FirstSet--> Client --mirror_time_out-->Main
+```
+
+```mermaid
+sequenceDiagram
+loop The Whole Sequence
+Main->>Main: 
+Client->>Main: Query Mirror Ip
+Main->>Client: Send Mirror Ip
+
+Client->>Mirror: Request Courses Json
+Mirror->>Client: Send First Json  With ImgUrl
+
+loop HeartBeat
+    Client->>Mirror: Usual Query For Data
+end
+
+Note left of Client: Time Out For Recv HeartBeat
+end
 ```
 
 
@@ -54,11 +75,20 @@ graph TD
 
 ```mermaid
 graph TD
-GetUrl --fail--> Error
+GetIp --fail--> Error
 Download --timeout--> Error
-GetJson --timeout-->retry--wait_random_time-->GetJson
-GetUrl --got--> Download ==Mirror==> GetJson --Join-->set--next_time-->GetJson
+GetIp --got--> Download ==Mirror==> GetJson
 ```
+
+#### HeartBeat
+
+```mermaid
+graph
+GetJson --timeout-->retry--wait_random_time-->GetJson
+GetJson --Join-->set--next_time-->GetJson
+```
+
+
 
 #### Download
 

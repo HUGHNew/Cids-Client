@@ -3,6 +3,7 @@ using System.Net.Sockets;
 using System.Net;
 using Newtonsoft.Json;
 using System.Text.RegularExpressions;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace Client
 {
@@ -10,7 +11,8 @@ namespace Client
     {
 		public const int ToMainRequestLength = 8;
 		public const int DelayBetweenSending = 100; // milli seconds
-		public static readonly Random random = new Random((int)System.DateTime.Now.Ticks);
+		public const int HeartBeatTimeGap = 1000; // 心跳包时间间隔 milli seconds
+		public static readonly Random random = new Random((int)DateTime.Now.Ticks);
         public static int NextInt => ClientTool.random.Next();
         public static byte[] GetOctByte(ref String id) {
 			byte[] bid = System.Text.Encoding.ASCII.GetBytes(id);
@@ -26,7 +28,9 @@ namespace Client
 			String time=Last ?? "null";
 			return $"{{\"UUID\":\"{id}\",\"time\":{time}}}";
 		}
-		//public static String GetIp() { }
+		// 摘要
+		//	返回一个 3-5 秒 的随机睡眠时间
+		public static int SendGapTime => NextInt % 2000 + 3000;
     }
 	public class CidsClient
 	{
@@ -102,7 +106,16 @@ namespace Client
 			}
 			// access here if succeed
 		}
-
+		public  String ReSendMain()
+        {
+			return SendMain(1);
+        }
+		// 摘要
+		//	给主服务器发UDP包直至获得镜像服务器IP
+		// 参数 
+		//	InitSendTime:2--Default
+		//		测试使用:更改默认值
+		//		正常使用:使用默认值
 		public String SendMain(byte InitSendTime=2)
         {
 			int GetMirrorIp = 0;
@@ -121,17 +134,15 @@ namespace Client
 				MirrorIP = String.Join(".", getip); // It's OK
 				System.Threading.Interlocked.Increment(ref GetMirrorIp);
 			});
-			//SendTimes(Gram,ClientTool.ToMainRequestLength, remote); // send first time
-
-			int sleepTime = 0;
+            // SendTimes(Gram,ClientTool.ToMainRequestLength, remote);
 
 			do{ // send until receive
 				if (Test){
 					Console.WriteLine($"\nSend for Mirror IP {SendTime} times");
 				}
-				SendTimes(Gram, ClientTool.ToMainRequestLength, remote);
-				sleepTime = ClientTool.NextInt % 2000 + 3000;
-				System.Threading.Thread.Sleep(sleepTime); // 3-5 seconds
+				// Gram[7] equals 0
+				SendTimes(Gram, ClientTool.ToMainRequestLength, remote); // The first send
+				System.Threading.Thread.Sleep(ClientTool.SendGapTime); // 3-5 seconds
 				Gram[7] = SendTime; // time increase
 				if (SendTime !=1 && SendTime != byte.MaxValue - 1) // limit 254 and lock 1
 				{
@@ -140,27 +151,36 @@ namespace Client
 			} while (System.Threading.Interlocked.Equals(GetMirrorIp,0));
 			return MirrorIP;
 		}
-		public Json.MirrorReceive SendMirror()
+		// 摘要
+		//	给镜像服务器发送UDP包直至获取镜像服务器JSON
+		//	发送 ASCII 字节流 收取 UTF8 字节流
+		// 异常
+		//	
+		private Json.MirrorReceive SendMirror(int SleepTimeMilli,bool MustGet=true)
         {
 			//Client.Connect(IPAddress.Parse(MirrorIP), MirrorPort); 
 			Json.MirrorReceive RecvJson=null;
-			IPEndPoint remote = new IPEndPoint(IPAddress.Parse(MirrorIP), MirrorPort);
+			IPEndPoint remote = new IPEndPoint(IPAddress.Parse(MirrorIP), MirrorPort); // mirror remote
 			int success = 0;
-
-			// get the update msg
-			System.Threading.Tasks.Task.Factory.StartNew(() => { // endless block and wait
-				if (Test){
+            #region a timer need to recv in  a limited time
+			System.Threading.Tasks.Task task = null;
+            // get the update msg
+			#region A Task for Udp Recv LOOP until get json
+			task=System.Threading.Tasks.Task.Factory.StartNew(() =>
+            #region Task
+            { // endless block and wait
+                if (Test){
 					Console.WriteLine("Init Task to Get Update Information");
 				}
 				// get Mirror Response
 				// get Update Information
-				byte[] JsonText=null;
-                while (JsonText == null || JsonText.Length == 4) // throw the extra Ip packages
-                {
+				byte[] JsonText; // Content Received
+				do // receive and judge if it's the main response
+				{
 					JsonText = Client.Receive(ref remote);
-                }
+				} while (JsonText.Length == 4); // throw the extra Ip packages
 				// convert to string
-				String MRecv = System.Text.Encoding.UTF8.GetString(JsonText);
+				String MRecv = System.Text.Encoding.UTF8.GetString(JsonText); // Recv UTF8 String
 				RecvJson = JsonConvert.DeserializeObject<Json.MirrorReceive>(MRecv);
 				if (Test)
 				{
@@ -168,23 +188,66 @@ namespace Client
 					Console.WriteLine(MRecv);
 				}
 				System.Threading.Interlocked.Increment(ref success);
-                if (RecvJson.NeedUpdate) // update needed
-                {
+				if (RecvJson.NeedUpdate) // update time if  need
+				{
 					lastTime = RecvJson.Time;
-                }
-			});
-
-			String StoMirror = ClientTool.ComposeMirrorRequest(uuid, lastTime);
+				}
+			}
+            #endregion// end of task
+            );
+            #endregion// Recv Task
+            
+            #endregion// end of a timer need
+            String StoMirror = ClientTool.ComposeMirrorRequest(uuid, lastTime); // the MSG will be sent to mirror
 			byte[] JsonBytes = System.Text.Encoding.ASCII.GetBytes(StoMirror);
 
+
 			// send request
-			do {
+			do{
 				// Sleep Set
 				SendTimes(JsonBytes,JsonBytes.Length,remote);
-				System.Threading.Thread.Sleep(ClientTool.NextInt % 2000 + 3000); // 3-5 seconds
-            } while (System.Threading.Interlocked.Equals(success, 0));
+				System.Threading.Thread.Sleep(SleepTimeMilli);
+            } while (System.Threading.Interlocked.Equals(success, 0)&&MustGet);
+			if (false == MustGet) // Wait half second and check
+			{
+				if (task.Wait(SleepTimeMilli >> 1)) { // complete
+
+				}
+				//System.Threading.Thread.Sleep(SleepTimeMilli >> 1);
+			}
 			return RecvJson;
 		}
+		public Json.MirrorReceive SendFirstMirror() {
+			return SendMirror(ClientTool.SendGapTime); // sleep 3-5 seconds each gap
+		}
+		// 摘要
+		//	发送心跳包 检查Mirror是否存活 需要外部计时计数
+		// 返回
+		//	是否需要更新壁纸
+		public bool HeartBeat(ref Json.MirrorReceive data)
+        {
+			Json.MirrorReceive receive = SendMirror(ClientTool.HeartBeatTimeGap,false);
+            if (receive.NeedUpdate)
+            {
+				data = receive;
+            }
+			return receive.NeedUpdate;
+        }
+        #region maybe need
+        public void todo() {
+			int success = 0;
+			#region A Timer to check if mirror lives
+			System.Threading.Tasks.Task.Factory.StartNew(() => { // Exception may be thrown
+				DateTime begin = DateTime.Now;
+				DateTime shouldEndBefore = DateTime.Now.AddMinutes(1);
+				do
+				{
 
-	}
+					System.Threading.Thread.Sleep(2000); // check every 2 seconds
+				} while (System.Threading.Interlocked.Equals(success, 0));
+			});
+			#endregion// Task for Timer
+		}
+        #endregion
+    }
 }

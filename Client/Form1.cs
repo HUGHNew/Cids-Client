@@ -99,13 +99,14 @@ namespace Client
                 return;
             }
             int success = 1;
+            #region Switch to endless loop to get wallpaper
             for (int c = 0; c < try_count; ++c)
             {
                 if (c > 0) // ?
-                    bgWorker.ReportProgress(c); // Error of communication with Server -- Timed Out
+                    bgWorker.ReportProgress(c); // Error of communication with Mirror Server -- Timed Out
                 try
                 {
-                    if (DownloadAndSet(url, time_out, interval) == false)
+                    if (DownloadAndSet(time_out, interval) == false)
                     {
                         continue;
                     }
@@ -119,6 +120,7 @@ namespace Client
             }
             if (success == 1)
                 bgWorker.ReportProgress(-2); // Communication Error
+            #endregion// Socket Communication
         }
         private void BGWorkerMain_RunWorkerCompleted(object sender, System.ComponentModel.RunWorkerCompletedEventArgs e)
         {
@@ -129,13 +131,14 @@ namespace Client
         {
             Environment.Exit(0);
         }
+        // It  may be discarded
         private void BGWorkerMain_ProgressChanged(object sender, System.ComponentModel.ProgressChangedEventArgs e)
         {
             if (e.ProgressPercentage == -1)
             {
                 fatal = true;
                 Visible = false;
-                MessageBox.Show("读取配置文件失败\n请检查网络连接情况",
+                MessageBox.Show("请求服务器失败\n请检查网络连接情况",
                     Init.ClientTitle, MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 Close();
             }
@@ -152,7 +155,7 @@ namespace Client
         #region Ways for Url
         private String ConfWayForUrl()
         {
-            StreamReader sr = null;
+            StreamReader sr;
             try
             {
                 sr = new StreamReader(Field.UrlForWallpaper + Field.FileName);
@@ -161,7 +164,7 @@ namespace Client
             {
                 return null;
             }
-            string url = null;
+            string url;
             while (true)
             {
                 url = sr.ReadLine(); // readline from conf file
@@ -172,18 +175,33 @@ namespace Client
             }
             return url;
         }
-        private String UdpUrl()
+
+        #endregion
+        private String UdpMirrorIp()
         {
-            //todo using udp to get url
+            //todo using udp to get ip of mirror
             return UdpClient.SendMain();
         }
-        #endregion
         #region Download and Set Wallpaper
         private static bool CheckValidationResult(object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors)
         {
             return true;
         }
-        private static bool DownloadFile(string URL, string filename)
+        // 摘要
+        //  从 URL 下载文件到 filename 中
+        // 参数
+        //  filename 相对路径文件名
+        //      前缀为 CidsImagePath
+        //      默认值为 SaveFile
+        private static bool DownloadFile(string URL, string filename=Image.ImageConf.SaveFile)
+        {
+            return DownloadAbsFile(URL, Path.Combine(Init.CidsImagePath,filename));
+        }
+        // 摘要
+        //  从 URL 下载文件到 filename 中
+        // 参数
+        //  filename 绝对路径文件名
+        private static bool DownloadAbsFile(string URL, string filename)
         {
             try
             {
@@ -211,23 +229,29 @@ namespace Client
             }
             return true;
         }
-        private bool DownloadAndSet(String ImgUrl,int time_out,int interval)
+        private bool DownloadAndSet(int time_out,int interval)
         {
             #region needed to change
-            string wallpaperPath = "";// File.Create(Init.CidsPath); // revise file name
+            // get wallpaper file
+            // An Absolute One
+            string wallpaperPath = Image.ImageConf.SaveAbsPathFile;
+
+            // get json
+            data = UdpClient.SendMirror();
+            String ImgUrl=data.Image_url;
+            #region Download File
             var tokenSource = new CancellationTokenSource();
             CancellationToken token = tokenSource.Token;
-            data = UdpClient.SendMirror();
-            var task = Task.Factory.StartNew(() => DownloadFile(ImgUrl, wallpaperPath), token); // download
+            var task = Task.Factory.StartNew(() => DownloadAbsFile(ImgUrl, wallpaperPath), token); // download
             if (!task.Wait(time_out, token) || !task.Result) // timed out
             {
                 Thread.Sleep(interval);
                 return false;
             }
-            // something to do here before set
-            #endregion
+            #endregion//download
+            #endregion//change region
 
-            string wallpaper = Image.CourceBoxes.GraphicsCompose(wallpaperPath, data);
+            string wallpaper = Image.CourceBoxes.GraphicsCompose(data, wallpaperPath);
             SetWallpaper(wallpaper, Style.Stretched);
             return true;
         }

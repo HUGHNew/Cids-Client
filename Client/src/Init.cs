@@ -19,6 +19,7 @@ namespace Client
         // Image Stored in %TMP% file
         public static readonly string CidsPath = // Get Path First
             $"{Environment.GetEnvironmentVariable("TMP", EnvironmentVariableTarget.Machine)?? "C:\\Windows\\Temp"}\\Cids";
+        public static readonly string CidsImagePath = Path.Combine(CidsPath,"image");
         public static readonly string ConfFile = Path.Combine(CidsPath, Conf); // where to get uuid
         private static string ValueOfCids = null; // store value
         //private static readonly Microsoft.Win32.RegistryKey RegKey = Microsoft.Win32.Registry.LocalMachine;

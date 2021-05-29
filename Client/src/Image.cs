@@ -12,7 +12,7 @@ namespace Client
         {
             #region Const or Readonly and Function for getting a destination file
             public const string SaveFile = "raw.jpg";
-            public static readonly string SaveAbsPathFile = System.IO.Path.Combine(Init.CidsPath,SaveFile);
+            public static readonly string SaveAbsPathFile = System.IO.Path.Combine(Init.CidsImagePath,SaveFile);
             private static readonly string[] DstFiles = { "wp0.png", "wp1.png" };
             private static bool UseZero = true;
             // 摘要
@@ -191,15 +191,20 @@ namespace Client
             //  data   : 收到的数据
             // 返回:
             //      返回 图片路径名
-            public static string GraphicsCompose(Json.MirrorReceive data, string picture)
+            public static string GraphicsCompose(Json.MirrorReceive data, string BasePicture)
             {
                 CourceBoxes boxes = new CourceBoxes();
                 boxes.Add(new Cource(data.Event.GetReadable()));
                 boxes.Add(new Cource(data.Next_event.GetReadable()));
-                //Console.WriteLine("TODO in GraphicsCompose function");
-                //string destPic = Time.now()+".png"; // timestamp.png
-                boxes.DrawImageSaveAs(new Bitmap(picture, true),destPic);
+                string destPic = ImageConf.GetDestFile();
+                boxes.DrawImageSaveAs(new Bitmap(BasePicture, true),destPic);
                 return destPic;
+            }
+            // 摘要
+            //  基于 raw.jpg 和 json 的数据 合成一张新的 课程表图片
+            public static string GraphicsCompose(Json.MirrorReceive data)
+            {
+                return GraphicsCompose(data, ImageConf.SaveAbsPathFile);
             }
         };
     }
