@@ -1,17 +1,17 @@
 ﻿using System;
 using System.Net.Sockets;
 using System.Net;
-using Newtonsoft.Json;
 using System.Text.RegularExpressions;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace Client
 {
 	public class ClientTool
     {
 		public const int ToMainRequestLength = 8;
-		public const int DelayBetweenSending = 100; // milli seconds
-		public const int HeartBeatTimeGap = 1000; // 心跳包时间间隔 milli seconds
+		public const int Second = 1000;
+		public const int DelayBetweenSending = Second/10; // milli seconds
+		public const int HeartBeatTimeGap = Second; // 心跳包时间间隔 milli seconds
+		public const int MirrorRecvTimeLimit = 30*Second; // Mirror Recv Time
 		public static readonly Random random = new Random((int)DateTime.Now.Ticks);
         public static int NextInt => ClientTool.random.Next();
         public static byte[] GetOctByte(ref String id) {
@@ -163,10 +163,10 @@ namespace Client
 			IPEndPoint remote = new IPEndPoint(IPAddress.Parse(MirrorIP), MirrorPort); // mirror remote
 			int success = 0;
             #region a timer need to recv in  a limited time
-			System.Threading.Tasks.Task task = null;
             // get the update msg
 			#region A Task for Udp Recv LOOP until get json
-			task=System.Threading.Tasks.Task.Factory.StartNew(() =>
+			System.Threading.Tasks.Task task = 
+				System.Threading.Tasks.Task.Factory.StartNew(() =>
             #region Task
             { // endless block and wait
                 if (Test){
@@ -181,7 +181,7 @@ namespace Client
 				} while (JsonText.Length == 4); // throw the extra Ip packages
 				// convert to string
 				String MRecv = System.Text.Encoding.UTF8.GetString(JsonText); // Recv UTF8 String
-				RecvJson = JsonConvert.DeserializeObject<Json.MirrorReceive>(MRecv);
+				RecvJson = Newtonsoft.Json.JsonConvert.DeserializeObject<Json.MirrorReceive>(MRecv);
 				if (Test)
 				{
 					Console.WriteLine("Get Update Information\nJson:\n");
@@ -210,12 +210,19 @@ namespace Client
             } while (System.Threading.Interlocked.Equals(success, 0)&&MustGet);
 			if (false == MustGet) // Wait half second and check
 			{
-				if (task.Wait(SleepTimeMilli >> 1)) { // complete
-
+				//task.Wait(SleepTimeMilli >> 1);
+				#region HalfPack
+				try { 
+					if (false==task.Wait(SleepTimeMilli >> 1)) { // not complete
+						// 半包可能吗?
+					}
+				}catch(Newtonsoft.Json.JsonSerializationException) { // just capture is ok
+					//RecvJson = null;
 				}
-				//System.Threading.Thread.Sleep(SleepTimeMilli >> 1);
-			}
-			return RecvJson;
+                #endregion//Half package
+                //System.Threading.Thread.Sleep(SleepTimeMilli >> 1);
+            }
+            return RecvJson;
 		}
 		public Json.MirrorReceive SendFirstMirror() {
 			return SendMirror(ClientTool.SendGapTime); // sleep 3-5 seconds each gap
@@ -227,27 +234,15 @@ namespace Client
 		public bool HeartBeat(ref Json.MirrorReceive data)
         {
 			Json.MirrorReceive receive = SendMirror(ClientTool.HeartBeatTimeGap,false);
+            if (null == receive) // not recv
+            {
+				return false;
+            }
             if (receive.NeedUpdate)
             {
 				data = receive;
             }
 			return receive.NeedUpdate;
         }
-        #region maybe need
-        public void todo() {
-			int success = 0;
-			#region A Timer to check if mirror lives
-			System.Threading.Tasks.Task.Factory.StartNew(() => { // Exception may be thrown
-				DateTime begin = DateTime.Now;
-				DateTime shouldEndBefore = DateTime.Now.AddMinutes(1);
-				do
-				{
-
-					System.Threading.Thread.Sleep(2000); // check every 2 seconds
-				} while (System.Threading.Interlocked.Equals(success, 0));
-			});
-			#endregion// Task for Timer
-		}
-        #endregion
     }
 }

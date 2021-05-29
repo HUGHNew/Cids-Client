@@ -72,32 +72,29 @@ namespace Client
         }
         private String GetUrl(int choice=0)
         {
-            switch (choice)
-            {
-                case 0: 
-                    return UdpUrl();
-                case 1:
-                    return ConfWayForUrl();
-                default:
-                    return null;
-            }
+            // no need now
+            return null;
+            //switch (choice)
+            //{
+            //    case 0: 
+            //        return UdpUrl();
+            //    case 1:
+            //        return ConfWayForUrl();
+            //    default:
+            //        return null;
+            //}
         }
         private void BGWorkerMain_DoWork(object sender, System.ComponentModel.DoWorkEventArgs e)
         { 
             Thread.Sleep(3000);
             BackgroundWorker bgWorker = sender as BackgroundWorker;
             UdpClient = new CidsClient();
-            String url = GetUrl();
+            UdpClient.SendMain();
             int try_count = 10;
             // Timeout, millsec
             int time_out = 10000;
             // Interval, millsec
             int interval = 2000;
-            if (url == null)
-            {
-                bgWorker.ReportProgress(-1); // Configuration Error
-                return;
-            }
             int success = 1;
             #region Switch to endless loop to get wallpaper
             for (int c = 0; c < try_count; ++c)
@@ -237,7 +234,7 @@ namespace Client
             string wallpaperPath = Image.ImageConf.SaveAbsPathFile;
 
             // get json
-            data = UdpClient.SendMirror();
+            data = UdpClient.SendFirstMirror();
             String ImgUrl=data.Image_url;
             #region Download File
             var tokenSource = new CancellationTokenSource();
