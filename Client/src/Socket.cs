@@ -244,5 +244,21 @@ namespace Client
             }
 			return receive.NeedUpdate;
         }
+		// 摘要
+		//	对于心跳包的次数包装
+		// 返回
+		//	是否在限时内获取Mirror的数据包
+		//	如果为否 则需要再次向 Main 申请 Ip
+		public bool LimitedHeartBeat(ref Json.MirrorReceive data,int mlliseconds=ClientTool.MirrorRecvTimeLimit) {
+			int times = mlliseconds / ClientTool.HeartBeatTimeGap; // 判断 mirror 离线的发包数量
+			do
+			{
+				if (HeartBeat(ref data))
+				{
+					return true;
+				}
+			} while (--times!=0);
+			return false;
+		}
     }
 }

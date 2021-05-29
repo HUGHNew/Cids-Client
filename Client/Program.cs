@@ -1,8 +1,6 @@
 ﻿using System;
 using System.IO;
 using Newtonsoft.Json;
-using System.Text.Json;
-using System.Text.Json.Serialization;
 
 //static class Temp {
 //    static void Main() {
@@ -121,14 +119,14 @@ namespace Client
         {
             var Ct = new CidsClient("1234567", "127.0.0.1", false);
             Ct.SendMain();
-            var json = Ct.SendMirror();
+            var json = Ct.SendFirstMirror();
             File.WriteAllText("../../test/connect.log", $"time:{json.Time}");
         }
         static void SendRecv()
         {
             var Ct = new CidsClient("1234567", "192.168.233.14");
             Ct.SendMain();
-            var json = Ct.SendMirror();
+            var json = Ct.SendFirstMirror();
         }
         static void IpParse()
         {
