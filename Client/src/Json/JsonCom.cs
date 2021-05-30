@@ -2,12 +2,6 @@
 using System.Collections.Generic;
 
 namespace Client {
-    class Field {
-        private static readonly string urlForWallpaper = Environment.GetEnvironmentVariable("TMP");
-        private const string fileName = "wallpaper_assistant_config.txt";
-        public static String UrlForWallpaper => urlForWallpaper;
-        public static String FileName => fileName;
-    }
 
     // <Summary>
     // Field : __Field__Data

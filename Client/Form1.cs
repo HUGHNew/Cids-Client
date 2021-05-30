@@ -35,7 +35,7 @@ namespace Client
         }
         private static void SetWallpaper(string strSavePath, Style style)
         {
-            Bitmap myBmp = new Bitmap(strSavePath)
+            Bitmap myBmp = new Bitmap(strSavePath);
             string fileName = Path.GetTempFileName() + ".bmp";
             myBmp.Save(fileName, System.Drawing.Imaging.ImageFormat.Bmp);
             RegistryKey key = Registry.CurrentUser.OpenSubKey(@"Control Panel\Desktop", true); // get the key of desk wallpaper
@@ -149,31 +149,7 @@ namespace Client
             Shut.Visible = true;
             Title.Text = "错误：无法连接至服务器。当前已尝试" + e.ProgressPercentage.ToString() + "次";
         }
-        #region Ways for Url
-        private String ConfWayForUrl()
-        {
-            StreamReader sr;
-            try
-            {
-                sr = new StreamReader(Field.UrlForWallpaper + Field.FileName);
-            }
-            catch (Exception)
-            {
-                return null;
-            }
-            string url;
-            while (true)
-            {
-                url = sr.ReadLine(); // readline from conf file
-                if (url == null) // empty file
-                    break;
-                if (Regex.Match(url, "^\\s*$").Success) // empty line
-                    continue;
-            }
-            return url;
-        }
 
-        #endregion
         private String UdpMirrorIp()
         {
             //todo using udp to get ip of mirror

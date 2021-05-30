@@ -1,15 +1,12 @@
 ﻿using System;
 using Microsoft.Toolkit.Uwp.Notifications;
+using Client.Data;
 
 namespace Client
 {
 	public class ToastGenerator
 	{
-        public static Uri defaultLogoUri= new Uri("file:///" + TMP + "/scu.ico");
-        // defaultHeroUri is no in need
-
-        public static string TMP = ((Environment.GetEnvironmentVariables(EnvironmentVariableTarget.Machine)["TMP"] as string)?.Replace('\\', '/') ?? "")+"/CIDS";
-        public static int Id=0;
+        public static int Id=0;// 当天消息记录
         public ToastGenerator(){}
         static public ToastContentBuilder Build(string content, string title="紧急事件",ToastScenario ts=ToastScenario.Reminder
                 ,Uri hero = null, Uri inline = null, Uri logo = null)
@@ -31,13 +28,13 @@ namespace Client
             Inline(toast, inline);
             return toast;
         }
-        static private ToastContentBuilder Logo(ToastContentBuilder tcb) {
-            tcb.AddAppLogoOverride(new Uri("file://"+ TMP+ "/scu.ico"),ToastGenericAppLogoCrop.Circle);
+        private static ToastContentBuilder Logo(ToastContentBuilder tcb) {
+            tcb.AddAppLogoOverride(ConfData.LogoUri,ToastGenericAppLogoCrop.Circle);
             return tcb;
         }
         static private ToastContentBuilder Logo(ToastContentBuilder tcb, Uri logo=null)
         {
-            logo = logo ?? defaultLogoUri;
+            logo = logo ?? ConfData.LogoUri;
             tcb.AddAppLogoOverride(logo, ToastGenericAppLogoCrop.Circle);
             return tcb;
         }

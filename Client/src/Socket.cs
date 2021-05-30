@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Net.Sockets;
 using System.Net;
-using System.Text.RegularExpressions;
+using Client.Data;
 
 namespace Client
 {
@@ -14,7 +14,7 @@ namespace Client
 		public const int MirrorRecvTimeLimit = 30*Second; // Mirror Recv Time
 		public static readonly Random random = new Random((int)DateTime.Now.Ticks);
         public static int NextInt => ClientTool.random.Next();
-        public static byte[] GetOctByte(ref String id) {
+        public static byte[] GetOctByte(String id) {
 			byte[] bid = System.Text.Encoding.ASCII.GetBytes(id);
 			byte[] Gram = new byte[8];
 			for (int i = 0; i < 7; ++i)
@@ -37,21 +37,18 @@ namespace Client
 		#region private property
 		private readonly UdpClient Client;
         private String lastTime=null,MirrorIP=null;
-		public static readonly String UuId;
 		private readonly bool Test = false;
         #endregion
 
         #region public property
+		public static readonly String UuId;
         public const int MainPort= 20800,MirrorPort=20801;
 		public readonly IPAddress DefaultMServer= IPAddress.Parse("127.0.0.1"); // Server IP need
-		public IPAddress MainServer;
 		public const int DefaultPackageNumber = 10;
-        public String Mirror => MirrorIP;
         #endregion
-		static CidsClient()
-        {
-			CidsClient.UuId = Environment.GetEnvironmentVariable(Init.EnvId, EnvironmentVariableTarget.Machine);
-		}
+        public String Mirror => MirrorIP;
+		public IPAddress MainServer;
+
         #region initilization uuid file or get uuid from conf file
 		static public bool ConfCheck()
         {
@@ -72,7 +69,6 @@ namespace Client
 			MainServer = server == null ? DefaultMServer : IPAddress.Parse(server);
 			Client = new UdpClient();
 			//Client.Connect(MainServer, MainPort);
-			GetUUID();
 		}
         #endregion
 
@@ -84,30 +80,6 @@ namespace Client
 				System.Threading.Thread.Sleep(ClientTool.DelayBetweenSending);
             }
         }
-		//
-		// Exception:
-		//	If any Exception occurs
-		private void GetUUID()
-        {
-			System.IO.StreamReader Reader;
-			try { 
-				Reader= new System.IO.StreamReader(Init.ConfFile);
-            }
-            catch (Exception)
-            {
-				throw;
-			}
-
-			while (true)
-			{
-				uuid = Reader.ReadLine(); // readline from conf file
-				if (uuid == null) // empty file
-					break;
-				if (Regex.Match(uuid, "^\\s*$").Success) // empty line
-					continue;
-			}
-			// access here if succeed
-		}
 		public  String ReSendMain()
         {
 			return SendMain(1);
@@ -121,7 +93,7 @@ namespace Client
 		public String SendMain(byte InitSendTime=2)
         {
 			int GetMirrorIp = 0;
-			byte[] Gram = ClientTool.GetOctByte(ref uuid);
+			byte[] Gram = ClientTool.GetOctByte(ConfData.UuId);
 			IPEndPoint remote = new IPEndPoint(MainServer, MainPort);
 			byte SendTime = InitSendTime;
 
@@ -200,7 +172,7 @@ namespace Client
             #endregion// Recv Task
             
             #endregion// end of a timer need
-            String StoMirror = ClientTool.ComposeMirrorRequest(uuid, lastTime); // the MSG will be sent to mirror
+            String StoMirror = ClientTool.ComposeMirrorRequest(ConfData.UuId, lastTime); // the MSG will be sent to mirror
 			byte[] JsonBytes = System.Text.Encoding.ASCII.GetBytes(StoMirror);
 
 
