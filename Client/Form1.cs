@@ -70,20 +70,7 @@ namespace Client
                 throw new Exception(); //  terminate the whole program
             }
         }
-        private String GetUrl(int choice=0)
-        {
-            // no need now
-            return null;
-            //switch (choice)
-            //{
-            //    case 0: 
-            //        return UdpUrl();
-            //    case 1:
-            //        return ConfWayForUrl();
-            //    default:
-            //        return null;
-            //}
-        }
+        private String GetUrl(int choice=0){ return null; }
         private void BGWorkerMain_DoWork(object sender, System.ComponentModel.DoWorkEventArgs e)
         { 
             Thread.Sleep(3000);
@@ -166,7 +153,7 @@ namespace Client
         //  filename 相对路径文件名
         //      前缀为 CidsImagePath
         //      默认值为 SaveFile
-        private static bool DownloadFile(string URL, string filename=Image.ImageConf.SaveFile)
+        private static bool DownloadFile(string URL, string filename=Data.ConfData.SaveFile)
         {
             return DownloadAbsFile(URL, Path.Combine(Init.CidsImagePath,filename));
         }
@@ -207,7 +194,7 @@ namespace Client
             #region needed to change
             // get wallpaper file
             // An Absolute One
-            string wallpaperPath = Image.ImageConf.SaveAbsPathFile;
+            string wallpaperPath = Data.ConfData.SaveAbsPathFile;
 
             // get json
             data = UdpClient.SendFirstMirror();

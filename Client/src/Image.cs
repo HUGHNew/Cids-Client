@@ -11,8 +11,6 @@ namespace Client
         class ImageConf
         {
             #region Const or Readonly and Function for getting a destination file
-            public const string SaveFile = "raw.bmp";
-            public static readonly string SaveAbsPathFile = System.IO.Path.Combine(Init.CidsImagePath,SaveFile);
             private static readonly string[] DstFiles = { "wp0.bmp", "wp1.bmp" };
             private static bool UseZero = true;
             // 摘要
@@ -204,7 +202,7 @@ namespace Client
             //  基于 raw.jpg 和 json 的数据 合成一张新的 课程表图片
             public static string GraphicsCompose(Json.MirrorReceive data)
             {
-                return GraphicsCompose(data, ImageConf.SaveAbsPathFile);
+                return GraphicsCompose(data, Data.ConfData.SaveAbsPathFile);
             }
         };
     }

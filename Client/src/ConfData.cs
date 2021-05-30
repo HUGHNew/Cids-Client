@@ -30,8 +30,13 @@ namespace Client
             public const int DefaultPackageNumber = 10;
             #endregion
 
+            #region Image Part
             // Image Stored in %Cids% file
             public static readonly string CidsImagePath = Path.Combine(CidsPath, "image"); // created while installing
+            public const string SaveFile = "raw.bmp";
+            public static readonly string SaveAbsPathFile = Path.Combine(Init.CidsImagePath, SaveFile);
+            #endregion
+
             #region Toast Part Properties
             public static readonly string Logo;
             public static readonly Uri LogoUri;
