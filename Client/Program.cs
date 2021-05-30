@@ -6,8 +6,16 @@ static class Temp
 {
     static void Main()
     {
-        EnvTest();
-        PFT();
+        LMBTest();
+    }
+    public static void LMBTest()
+    {
+        Client.Message.TimedMsgBox.TimedMessageBox("null msg", 10000);
+        for(int i = 0; i < 10; ++i)
+        {
+            System.Threading.Thread.Sleep(1000);
+            Console.WriteLine(i);
+        }
     }
     public static void PFT()
     {

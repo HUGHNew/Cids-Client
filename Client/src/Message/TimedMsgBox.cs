@@ -13,7 +13,7 @@ namespace Client
             public static void TimedMessageBox(string msg,int showTime)
             {
                 Task task = Task.Factory.StartNew(()=> {
-                    MessageBox.Show(ConfData.ClientTitle,msg, MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    MessageBox.Show(msg, ConfData.ClientTitle, MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 });
                 new Thread(() => {
                     task.Wait(showTime,new CancellationToken());

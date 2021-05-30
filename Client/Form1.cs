@@ -5,13 +5,12 @@ using System.Net.Security;
 using System.Net;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography.X509Certificates;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Threading;
 using System;
 using System.Windows.Forms;
 using Microsoft.Win32;
-
+using Client.Data;
 namespace Client
 {
     public partial class Form1 : Form
@@ -66,7 +65,7 @@ namespace Client
         {
             if (Init.Configuration()==false) // failed
             {
-                MessageBox.Show(Init.ClientTitle, "Cids配置文件不完整", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("Cids配置文件不完整", ConfData.ClientTitle, MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 throw new Exception(); //  terminate the whole program
             }
         }
@@ -123,14 +122,14 @@ namespace Client
                 fatal = true;
                 Visible = false;
                 MessageBox.Show("请求服务器失败\n请检查网络连接情况",
-                    Init.ClientTitle, MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    ConfData.ClientTitle, MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 Close();
             }
             else if (e.ProgressPercentage == -2)
             {
                 fatal = true;
                 Visible = false;
-                MessageBox.Show("联络服务器失败", Init.ClientTitle, MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("联络服务器失败", ConfData.ClientTitle, MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 Close();
             }
             Shut.Visible = true;
@@ -153,7 +152,7 @@ namespace Client
         //  filename 相对路径文件名
         //      前缀为 CidsImagePath
         //      默认值为 SaveFile
-        private static bool DownloadFile(string URL, string filename=Data.ConfData.SaveFile)
+        private static bool DownloadFile(string URL, string filename=ConfData.SaveFile)
         {
             return DownloadAbsFile(URL, Path.Combine(Init.CidsImagePath,filename));
         }

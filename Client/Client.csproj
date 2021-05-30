@@ -59,12 +59,13 @@
     <Compile Include="src\ConfData.cs" />
     <Compile Include="src\Init.cs" />
     <Compile Include="src\Image.cs" />
+    <Compile Include="src\Message\TimedMsgBox.cs" />
+    <Compile Include="src\Message\Toast.cs" />
     <Compile Include="test\ImgTest.cs" />
     <Compile Include="test\UdpServerTest.cs" />
     <Compile Include="src\Json\JsonCom.cs" />
     <Compile Include="src\Socket.cs" />
     <Compile Include="src\Time.cs" />
-    <Compile Include="src\Toast.cs" />
     <Compile Include="test\JsonTest.cs" />
     <EmbeddedResource Include="Form1.resx">
       <DependentUpon>Form1.cs</DependentUpon>
