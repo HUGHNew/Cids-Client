@@ -114,5 +114,35 @@ namespace Client {
             //    this.update = needUpdate;
             //}
         }
+        namespace ConfComponent
+        {
+            public class NetData { 
+                public string Main_Ip { get; set; }
+                public int Main_Port { get; set; }
+                public int Mirror_Port { get; set; }
+                public bool IPv4 => Main_Ip.Contains(".");
+            }
+            public class TimeData
+            {
+                // interval of each Udp package
+                public int Delay { get; set; }
+                // heartbeat interval
+                public int HeartBeat { get; set; }
+                // the max times of no response heartbeat
+                public int Limit { get; set; }
+                public SleepTime Sleep { get; set; }
+            }
+            public class SleepTime
+            {
+                public int Min { get; set; }
+                public int Max { get; set; }
+            }
+        }
+        public class Conf
+        {
+            public ConfComponent.NetData Net { get; set; }
+            public ConfComponent.TimeData Time { get; set; }
+            public string Logo { get; set; }
+        }
     }
 }

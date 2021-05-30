@@ -11,9 +11,9 @@ namespace Client
         class ImageConf
         {
             #region Const or Readonly and Function for getting a destination file
-            public const string SaveFile = "raw.jpg";
+            public const string SaveFile = "raw.bmp";
             public static readonly string SaveAbsPathFile = System.IO.Path.Combine(Init.CidsImagePath,SaveFile);
-            private static readonly string[] DstFiles = { "wp0.png", "wp1.png" };
+            private static readonly string[] DstFiles = { "wp0.bmp", "wp1.bmp" };
             private static bool UseZero = true;
             // 摘要
             //  将 UseZero 取反 然后返回当前值
@@ -158,7 +158,7 @@ namespace Client
 
                     boxPoint.Y += boxWH.Height;
                 }
-                img.Save(savePath, System.Drawing.Imaging.ImageFormat.Png);
+                img.Save(savePath, System.Drawing.Imaging.ImageFormat.Bmp);
             }
             // 把字画在图上
             private void DrawText(ref Graphics g,Cource c,Rectangle rec,int leftPadding,Font headFont,Font textFont,int cols=5,int text1=2,int text2=3)

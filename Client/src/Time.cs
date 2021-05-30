@@ -12,7 +12,7 @@ namespace Client
 			String clock = DateTime.Now.ToLongTimeString().Replace(":", "-");
 			accuracyTime = year + "-" + day + "-" + clock;
 		}
-		public String AccuracyTime{ get;}
+		public String AccuracyTime => accuracyTime;
 		public static String now() {
 			String year = (DateTime.Now.Year - 1900).ToString();
 			String day = DateTime.Now.DayOfYear.ToString();

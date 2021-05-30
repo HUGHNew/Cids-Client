@@ -35,7 +35,7 @@ namespace Client
         }
         private static void SetWallpaper(string strSavePath, Style style)
         {
-            Bitmap myBmp = new Bitmap(strSavePath);
+            Bitmap myBmp = new Bitmap(strSavePath)
             string fileName = Path.GetTempFileName() + ".bmp";
             myBmp.Save(fileName, System.Drawing.Imaging.ImageFormat.Bmp);
             RegistryKey key = Registry.CurrentUser.OpenSubKey(@"Control Panel\Desktop", true); // get the key of desk wallpaper
@@ -66,7 +66,7 @@ namespace Client
         {
             if (Init.Configuration()==false) // failed
             {
-                MessageBox.Show(Init.ClientTitle, "配置Cids出错", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show(Init.ClientTitle, "Cids配置文件不完整", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 throw new Exception(); //  terminate the whole program
             }
         }

@@ -107,6 +107,12 @@ TimedDisplay-->MessageBox
 
 #### IntergrityCheck
 
+写 `Machine` 级环境变量
+
+1.  UUID 在安装时 通过环境变量`CidsUUID`写入
+2.  整体文件路径安装时写入环境变量 `Cids`
+3.  其他配置通过 `CidsConf.json` 更改
+
 
 
 ```mermaid
@@ -130,7 +136,7 @@ graph LR
         "heartbeat":_num,
         // heartbeat limit times to regard the mirror as a dead
         "limit":__num,
-        "random":{
+        "sleep":{
             "min":_num,
             "max":_num
         },

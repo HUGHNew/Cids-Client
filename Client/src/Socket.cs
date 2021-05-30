@@ -37,7 +37,7 @@ namespace Client
 		#region private property
 		private readonly UdpClient Client;
         private String lastTime=null,MirrorIP=null;
-		private String uuid;
+		public static readonly String UuId;
 		private readonly bool Test = false;
         #endregion
 
@@ -48,7 +48,10 @@ namespace Client
 		public const int DefaultPackageNumber = 10;
         public String Mirror => MirrorIP;
         #endregion
-
+		static CidsClient()
+        {
+			CidsClient.UuId = Environment.GetEnvironmentVariable(Init.EnvId, EnvironmentVariableTarget.Machine);
+		}
         #region initilization uuid file or get uuid from conf file
 		static public bool ConfCheck()
         {
@@ -62,7 +65,6 @@ namespace Client
 			MainServer = IPAddress.Parse(Server);
 			//Client = new UdpClient(new IPEndPoint(IPAddress.Any,65500)); // something may err here
 			Client = new UdpClient();
-			this.uuid = uuid;
 			this.Test = test;
         }
         public CidsClient(String server=null)
