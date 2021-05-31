@@ -15,6 +15,19 @@
   - [x] High Coupling now
   - [ ] Run with the other module
 
+## List
+
+- [] 补全RecvJson信息展示
+  - [] Toast
+  - [] MessageBox
+- [] 下载定时定次
+  - [] 先保存当前壁纸到raw.bmp
+  - [] 下载不了的话 先暂停下载任务 time 为 "null"
+- [] 测试
+  - [] 图片合成和保存
+  - [] C/S
+  - [] download
+
 ## Update
 
 1. Migrate to Windows Service Framework
