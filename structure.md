@@ -18,6 +18,15 @@ GetUrl --got--> Download ==Mirror==> GetJson --Join-->set--next_time-->GetJson
 
 
 
+### todo
+
+-   [] Environment
+    -   [] Cids:`%ProgramFiles%\Cids` Process[ProgramFIles]
+    -   [] CidsUUID:id
+-   
+
+
+
 ## Single Exe
 
 Init.cs:
@@ -107,11 +116,22 @@ TimedDisplay-->MessageBox
 
 #### IntergrityCheck
 
-写 `Machine` 级环境变量
+写 `Machine` 级环境变量 获取 `Machine`级环境变量**TMP**
 
 1.  UUID 在安装时 通过环境变量`CidsUUID`写入
-2.  整体文件路径安装时写入环境变量 `Cids`
-3.  其他配置通过 `CidsConf.json` 更改
+2.  `CidsConf.json`写入`%Cids%`
+3.  图片路径安装时写入环境变量 `%TMP%\Cids`
+    1.  `%TMP%\Cids\image`
+4.  其他配置通过 `CidsConf.json` 更改
+
+```mermaid
+graph TD
+MCids(%Cids%)-->ToastLogo
+MCids(%Cids%)-->CidsConf.json
+TCids(%TMP%\Cids)-->image-->raw.bmp
+image-->wp0.bmp
+image-->wp1.bmp
+```
 
 
 
@@ -145,7 +165,9 @@ graph LR
 }
 ```
 
+### 环境变量使用
 
+1.  添加两个环境变量
 
 ### 类介绍
 
@@ -153,7 +175,7 @@ graph LR
 
 下载到`Init.CidsPath` 图片保存在 `raw.bmp`
 
--   [] 拼接的图片放在`img`下 从 0 开始编号 每次拼接后选取值最大的
+-   [] 拼接的图片放在`image`下 从 0 开始编号 每次拼接后选取值最大的
 
 -   [] 每次更新后保存两次的图片
     -   命名为`{wp0.bmp,wp1.bmp}`

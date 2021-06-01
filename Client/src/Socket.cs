@@ -1,7 +1,15 @@
 ﻿using System;
+using System.IO;
 using System.Net.Sockets;
 using System.Net;
 using Client.Data;
+using Microsoft.Win32;
+using System.Runtime.InteropServices;
+using Client.Image;
+using System.Net.Security;
+using System.Security.Cryptography.X509Certificates;
+using System.Threading.Tasks;
+using System.Threading;
 
 namespace Client
 {
@@ -9,9 +17,10 @@ namespace Client
     {
 		public const int ToMainRequestLength = 8;
 		public const int Second = 1000;
-		public const int DelayBetweenSending = Second/10; // milli seconds
-		public const int HeartBeatTimeGap = Second; // 心跳包时间间隔 milli seconds
-		public const int MirrorRecvTimeLimit = 30*Second; // Mirror Recv Time
+		// Timeout, millsec
+		public const int time_out = 10000;
+		// Interval, millsec
+		public const int interval = 2000;
 		public static readonly Random random = new Random((int)DateTime.Now.Ticks);
         public static int NextInt => ClientTool.random.Next();
         public static byte[] GetOctByte(String id) {
@@ -29,10 +38,129 @@ namespace Client
 			return $"{{\"UUID\":\"{id}\",\"time\":{time}}}";
 		}
 		// 摘要
-		//	返回一个 3-5 秒 的随机睡眠时间
-		public static int SendGapTime => NextInt % 2000 + 3000;
+		//	返回一个 指定间隔 的随机睡眠时间
+		//	min - max
+		public static int SendGapTime => NextInt % ConfData.SleepMin + ConfData.SleepMax;
+        #region Update And Set Wallpaper All the useful function
+        const int SPI_SETDESKWALLPAPER = 20;
+		const int SPIF_UPDATEINIFILE = 0x01;
+		const int SPIF_SENDWININICHANGE = 0x02;
+		[DllImport("user32.dll", CharSet = CharSet.Auto)]
+		static extern int SystemParametersInfo(int uAction, int uParam, string lpvParam, int fuWinIni); // for Wallpaper Set
+		public enum Style : int
+		{
+			Tiled,
+			Centered,
+			Stretched
+		}
+		public static void SetWallpaper(Style style=Style.Stretched)
+		{
+			string fileName = Path.Combine(ConfData.CidsImagePath, Image.ImageConf.ToSetWallFile());
+			ClientTool.SetWallpaper(fileName, style);
+		}
+		public static void SetWallpaper(string strSavePath, Style style)
+		{
+			#region Set Wall
+			RegistryKey key = Registry.CurrentUser.OpenSubKey(@"Control Panel\Desktop", true); // get the key of desk wallpaper
+			if (style == Style.Stretched)
+			{
+				key.SetValue(@"WallpaperStyle", 2.ToString());
+				key.SetValue(@"TileWallpaper", 0.ToString());
+			}
+			if (style == Style.Centered)
+			{
+				key.SetValue(@"WallpaperStyle", 1.ToString());
+				key.SetValue(@"TileWallpaper", 0.ToString());
+			}
+			if (style == Style.Tiled)
+			{
+				key.SetValue(@"WallpaperStyle", 1.ToString());
+				key.SetValue(@"TileWallpaper", 1.ToString());
+			}
+			SystemParametersInfo(SPI_SETDESKWALLPAPER, 0, strSavePath, SPIF_UPDATEINIFILE | SPIF_SENDWININICHANGE);
+			#endregion
+		}
+		#region Download and Set Wallpaper
+		private static bool CheckValidationResult(object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors)
+		{
+			return true;
+		}
+		// 摘要
+		//  从 URL 下载文件到 filename 中
+		// 参数
+		//  filename 相对路径文件名
+		//      前缀为 CidsImagePath
+		//      默认值为 SaveFile
+		public static bool DownloadFile(string URL, string filename = ConfData.SaveFile)
+		{
+			return DownloadAbsFile(URL, Path.Combine(ConfData.CidsImagePath, filename));
+		}
+		// 摘要
+		//  从 URL 下载文件到 filename 中
+		// 参数
+		//  filename 绝对路径文件名
+		public static bool DownloadAbsFile(string URL, string filename)
+		{
+			string tmp = Path.GetTempFileName();
+			try
+			{
+				//File.Delete(filename);
+				ServicePointManager.ServerCertificateValidationCallback = new RemoteCertificateValidationCallback(CheckValidationResult);
+				HttpWebRequest Myrq = (HttpWebRequest)WebRequest.Create(URL);
+				HttpWebResponse myrp = (HttpWebResponse)Myrq.GetResponse();
+				Stream st = myrp.GetResponseStream();
+				Stream so = new FileStream(tmp, FileMode.Create);
+				long totalDownloadedByte = 0;
+				byte[] by = new byte[1024];
+				int osize = st.Read(by, 0, by.Length);
+				while (osize > 0)
+				{
+					totalDownloadedByte = osize + totalDownloadedByte;
+					so.Write(by, 0, osize);
+					osize = st.Read(by, 0, by.Length);
+				}
+				so.Close();
+				st.Close();
+			}
+			catch (Exception)
+			{
+				return false;
+			}
+			File.Move(tmp, filename);
+			return true;
+		}
+		public static bool TryDownload(ref CidsClient UdpClient, ref Json.MirrorReceive data, int time_out, int interval, int limit = 30)
+		{
+			// get wallpaper file
+			// An Absolute One
+			string wallpaperPath = Data.ConfData.SaveAbsPathFile;
+
+			// get json
+			data = UdpClient.SendFirstMirror();
+			String ImgUrl = data.Image_url;
+			#region Download File
+			// Set Attempt Limit
+			var tokenSource = new CancellationTokenSource();
+			CancellationToken token = tokenSource.Token;
+			var task = Task.Factory.StartNew(() => DownloadAbsFile(ImgUrl, wallpaperPath), token); // download
+			if (!task.Wait(time_out * limit, token) || !task.Result) // timed out
+			{
+				UdpClient.DownLoadFail();
+				Thread.Sleep(interval);
+			}
+			#endregion//download
+			return true;
+		}
+		public static bool Update(ref Json.MirrorReceive data)
+		{
+			Operation.GraphicsCompose(data);
+			SetWallpaper();
+			return true;
+		}
+        #endregion
+        #endregion//Migrate to here
     }
-	public class CidsClient
+    public class CidsClient
 	{
 		#region private property
 		private readonly UdpClient Client;
@@ -41,9 +169,7 @@ namespace Client
         #endregion
 
         #region public property
-		public static readonly String UuId;
-        public const int MainPort= 20800,MirrorPort=20801;
-		public readonly IPAddress DefaultMServer= IPAddress.Parse("127.0.0.1"); // Server IP need
+		public static  String UuId => ConfData.UuId;
 		public const int DefaultPackageNumber = 10;
         #endregion
         public String Mirror => MirrorIP;
@@ -66,21 +192,28 @@ namespace Client
         }
         public CidsClient(String server=null)
         {
-			MainServer = server == null ? DefaultMServer : IPAddress.Parse(server);
+			MainServer = server == null ? ConfData.DefaultMServer : IPAddress.Parse(server);
 			Client = new UdpClient();
 			//Client.Connect(MainServer, MainPort);
 		}
         #endregion
-
+		public void DownLoadFail()
+        {
+			lastTime = null;
+        }
         private void SendTimes(byte[]data,int bytes,IPEndPoint end,int times= DefaultPackageNumber)
         {
 			for(int i = 0; i < times; ++i)
             {
 				Client.Send(data, bytes, end);
-				System.Threading.Thread.Sleep(ClientTool.DelayBetweenSending);
+				System.Threading.Thread.Sleep(ConfData.SendDelayTime);
             }
         }
-		public  String ReSendMain()
+		// 摘要
+		//	重发数据报给 MainServer 并告知服务器重发原因
+		// 返回
+		//	Mirror IP
+		public String ReSendMain()
         {
 			return SendMain(1);
         }
@@ -94,7 +227,7 @@ namespace Client
         {
 			int GetMirrorIp = 0;
 			byte[] Gram = ClientTool.GetOctByte(ConfData.UuId);
-			IPEndPoint remote = new IPEndPoint(MainServer, MainPort);
+			IPEndPoint remote = new IPEndPoint(MainServer, ConfData.MainPort);
 			byte SendTime = InitSendTime;
 
 			// Recv Information
@@ -134,7 +267,7 @@ namespace Client
         {
 			//Client.Connect(IPAddress.Parse(MirrorIP), MirrorPort); 
 			Json.MirrorReceive RecvJson=null;
-			IPEndPoint remote = new IPEndPoint(IPAddress.Parse(MirrorIP), MirrorPort); // mirror remote
+			IPEndPoint remote = new IPEndPoint(IPAddress.Parse(MirrorIP), ConfData.MirrorPort); // mirror remote
 			int success = 0;
             #region a timer need to recv in  a limited time
             // get the update msg
@@ -161,7 +294,7 @@ namespace Client
 					Console.WriteLine("Get Update Information\nJson:\n");
 					Console.WriteLine(MRecv);
 				}
-				System.Threading.Interlocked.Increment(ref success);
+				System.Threading.Interlocked.Increment(ref success); // unlock i.e. break loop
 				if (RecvJson.NeedUpdate) // update time if  need
 				{
 					lastTime = RecvJson.Time;
@@ -207,7 +340,7 @@ namespace Client
 		//	是否需要更新壁纸
 		public bool HeartBeat(ref Json.MirrorReceive data)
         {
-			Json.MirrorReceive receive = SendMirror(ClientTool.HeartBeatTimeGap,false);
+			Json.MirrorReceive receive = SendMirror(ConfData.HeartBeatGap,false);
             if (null == receive) // not recv
             {
 				return false;
@@ -223,16 +356,39 @@ namespace Client
 		// 返回
 		//	是否在限时内获取Mirror的数据包
 		//	如果为否 则需要再次向 Main 申请 Ip
-		public bool LimitedHeartBeat(ref Json.MirrorReceive data,int mlliseconds=ClientTool.MirrorRecvTimeLimit) {
-			int times = mlliseconds / ClientTool.HeartBeatTimeGap; // 判断 mirror 离线的发包数量
+		public bool LimitedHeartBeat(ref Json.MirrorReceive data,int LimitTimes) {
 			do
 			{
 				if (HeartBeat(ref data))
 				{
 					return true;
 				}
-			} while (--times!=0);
+			} while (--LimitTimes != 0);
 			return false;
 		}
+		public bool LimitedHeartBeat(ref Json.MirrorReceive data)
+        {
+			return LimitedHeartBeat(ref data, ConfData.MirrorRecvLimit);
+        }
+		// 摘要
+		//	第一次连接 发心跳包 有问题重发 解决后续所有问题
+		public static void UdpClientBeat(CidsClient client,ref Json.MirrorReceive data)
+        {
+            while (true)
+            {
+				while (client.LimitedHeartBeat(ref data))
+				{
+					// update information
+					if (data.Image_url != "")
+					{
+						ClientTool.TryDownload(ref client,ref data,
+							ClientTool.time_out, ClientTool.interval);
+						ClientTool.SetWallpaper();
+					}
+					ClientTool.Update(ref data);
+				}
+				client.ReSendMain(); // Get A New Mirror In Case The Old One is Down
+            }
+        }
     }
 }

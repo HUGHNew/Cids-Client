@@ -1,7 +1,7 @@
 ﻿using System;
 using Windows.Foundation;
 
-namespace Client
+namespace Client.Test
 {
     public class JsonTest
     {

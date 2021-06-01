@@ -51,6 +51,12 @@ namespace Client {
                 {
                     return "Title:"+Title+"\tText:"+Text+"\tExpireTime:"+ ExpireTime;
                 }
+                public MessageData(string title,string text,int expire)
+                {
+                    Title = title;
+                    Text = text;
+                    ExpireTime = expire;
+                }
             }
             // 事件: 代表当前的课程(教室借用情况)
             

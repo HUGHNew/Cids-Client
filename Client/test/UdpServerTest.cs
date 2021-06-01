@@ -3,7 +3,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 
-namespace Client
+namespace Client.Test
 {
     // test class
     class UdpTest
