@@ -1,5 +1,5 @@
 # binary files
-Client/bin
+Client/bin/*
 
 # image
 Client/test/img
