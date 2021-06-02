@@ -120,7 +120,7 @@ namespace Client {
                 public string Main_Ip { get; set; }
                 public int Main_Port { get; set; }
                 public int Mirror_Port { get; set; }
-                public bool IPv4 => Main_Ip.Contains(".");
+                public bool IPv4 => Main_Ip.Contains("."); // need to be transient
             }
             public class TimeData
             {

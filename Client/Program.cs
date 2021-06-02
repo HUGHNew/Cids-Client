@@ -15,8 +15,9 @@ static class Temp
         //write(File.Exists(@"C:\a\b\c") ? "null" : "False");
         //write(Client.Init.Configuration().ToString());
         //WPSave();
-        desk();
+        //desk();
         //Client.Test.ShowTest.SeriesShow();
+        Client.Test.JsonTest.Bundle();
         //LMBTest();
         //EnvTest();
         //PFT();

@@ -1,15 +1,23 @@
 {
-    "time":"121-91-20-10-32",
-    "image_url": "192.168.0.1/xxxx",
-    "message": [
-      {"Title":"EmptyMsg", "Text":"NoMsg", "ExpireTime":"Min/Sec"}
-    ],// 消息列表 包含：消息的标题 内容 持续时间
-    
-    "event": { // 事件：代表当前的课程（教室借用情况）
-      "ExpireTime":"123", //持续时间
-      "Contents":"",    //课程内容
-      "color":"blue"    //可以一定程度修改颜色？（或者改成type也行）
-    },
-    "next_event":{},
-    "needUpdate": true //是否需要更新
+  "time":"121-91-20-10-32",
+  "image_url": "192.168.0.1/xxxx",
+  "message": [
+    {"Title":"Title", "Text":"", "ExpireTime":42}
+  ],// 消息列表，包含：消息的标题，内容，持续时间
+  
+  "event": { // 事件：代表当前的课程（教室借用情况）
+    "kch": "192129312", // 课程号
+    "kxh": 3, // 课序号
+    "kcm": "编译原理", // 课程名
+    "jsxm": "潘微", // 教室姓名
+    "jxdd": "一教A301"// 教学地点
+  },
+  "next_event":{
+    "kch": "",
+    "kxh": 0,
+    "kcm": "",
+    "jsxm": "",
+    "jxdd": "" 
+  },
+  "needUpdate": true//是否需要更新
 }

@@ -1,0 +1,30 @@
+In file : NoUpdate.json
+not Update
+In file : emptyMsg.json
+{"Image_url":"192.168.0.1/xxxx","Message":[],"Event":{"Kch":"192129312","Kxh":3,"Kcm":"编译原理","Jsxm":"潘微","Jxdd":"一教A301"},"Next_event":{"Kch":"123123","Kxh":42,"Kcm":"???","Jsxm":"Me","Jxdd":"222"},"NeedUpdate":true,"Time":"121-91-20-10-32"}
+
+receive 
+readable 
+
+{"CourseTitle":"???","CourseNo":42,"Professor":"Me"}
+In file : lastEvent.json
+{"Image_url":"192.168.0.1/xxxx","Message":[{"Title":"Title","Text":"","ExpireTime":42}],"Event":{"Kch":"192129312","Kxh":3,"Kcm":"编译原理","Jsxm":"潘微","Jxdd":"一教A301"},"Next_event":{"Kch":"","Kxh":0,"Kcm":"","Jsxm":"","Jxdd":""},"NeedUpdate":true,"Time":"121-91-20-10-32"}
+
+receive 
+readable 
+
+{"CourseTitle":"","CourseNo":0,"Professor":""}
+In file : noUrl.json
+{"Image_url":"192.168.0.1/xxxx","Message":[{"Title":"noUrl","Text":"","ExpireTime":42}],"Event":{"Kch":"192129312","Kxh":3,"Kcm":"编译原理","Jsxm":"潘微","Jxdd":"一教A301"},"Next_event":{"Kch":"","Kxh":0,"Kcm":"","Jsxm":"","Jxdd":""},"NeedUpdate":true,"Time":"121-91-20-10-32"}
+
+receive 
+readable 
+
+{"CourseTitle":"","CourseNo":0,"Professor":""}
+In file : recity.json
+{"Image_url":"192.168.0.1/xxxx","Message":[{"Title":"","Text":"","ExpireTime":42}],"Event":{"Kch":"192129312","Kxh":3,"Kcm":"编译原理","Jsxm":"潘微","Jxdd":"一教A301"},"Next_event":{"Kch":"","Kxh":0,"Kcm":"","Jsxm":"","Jxdd":""},"NeedUpdate":true,"Time":"121-91-20-10-32"}
+
+receive 
+readable 
+
+{"CourseTitle":"","CourseNo":0,"Professor":""}

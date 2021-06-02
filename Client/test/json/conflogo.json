@@ -1,0 +1,22 @@
+{// --file:%Cids%\CidsConf.json
+// 环境变量为 Machine 项为 Cids 以下涉及路径均使用相对路径
+    "net":{
+        "main_ip":"127.0.0.1",// IP Addr
+        // 带.就IPv4 不然IPv6
+        "main_port":114514,
+        "mirror_port":114514,
+	},
+    "time":{// milli sec
+        // the delay of each udp package
+        "delay":100,
+        // the interval of heartbeat
+        "heartbeat":1000,
+        // heartbeat limit times to regard the mirror as a dead
+        "limit":10,
+        "sleep":{
+            "min":2000,
+            "max":5000
+        },
+    },
+    "logo":"/home/home/tmp.jpg"//toast 的 logo 就是弹出消息的一个图片 可以 install 的时候放进去 似乎定为默认字段就好了
+}

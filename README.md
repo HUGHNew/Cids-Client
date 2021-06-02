@@ -6,12 +6,12 @@
     - [x] remain to change field
 - [x] UDP Socket Communication
   - [x] UDP test server
-- [] Graphic/bitmap Generation
+- [x] Graphic/bitmap Generation
   - [x] Got Image Cs File
   - [x] Test
   - [x] Refactor
-  - [] raw image based change
-- [] Form Refactor
+  - [x] raw image based change
+- [x] Form Refactor
   - [x] High Coupling now
   - [ ] Run with the other module
 
@@ -24,10 +24,14 @@
 - [x] 下载定时定次
   - [x] 先保存当前壁纸到raw.bmp
   - [x] 下载不了的话 先暂停下载任务 time 为 "null"
-- [] 测试
-  - [] 图片合成和保存
-  - [] C/S
-  - [] download
+- [ ] 测试
+  - [x] Toast
+  - [x] Json
+    - [x] Conf:Logo Err
+    - [x] Recv
+  - [ ] 图片合成和保存
+  - [ ] C/S
+  - [ ] download
 
 ## Update
 
