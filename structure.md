@@ -173,12 +173,12 @@ graph LR
 
 #### Download
 
-下载到`Init.CidsPath` 图片保存在 `raw.bmp`
+下载到`Init.CidsPath` 图片保存在 `raw.jpg`
 
 -   [] 拼接的图片放在`image`下 从 0 开始编号 每次拼接后选取值最大的
 
 -   [x] 每次更新后保存两次的图片
-    -   命名为`{wp0.bmp,wp1.bmp}`
+    -   命名为`{wp0.jpg,wp1.jpg}`
     -   两次图片循环使用
     -   直接复写上一次未使用文件
 

@@ -44,7 +44,7 @@ namespace Client
             #region Image Part
             // Image Stored in %Cids% file
             public static readonly string CidsImagePath = Path.Combine(CidsTmpPath, "image"); // created while installing
-            public const string SaveFile = "raw.bmp";
+            public const string SaveFile = "raw.jpg";
             public static readonly string SaveAbsPathFile = Path.Combine(CidsImagePath, SaveFile);
             #endregion
 

@@ -1,4 +1,5 @@
-﻿using System;
+﻿#define Test
+using System;
 using System.IO;
 using System.Net.Sockets;
 using System.Net;
@@ -165,11 +166,10 @@ namespace Client
 		#region private property
 		private readonly UdpClient Client;
         private String lastTime=null,MirrorIP=null;
-		private readonly bool Test = false;
         #endregion
 
         #region public property
-		public static  String UuId => ConfData.UuId;
+		public static String UuId => ConfData.UuId;
 		public const int DefaultPackageNumber = 10;
         #endregion
         public String Mirror => MirrorIP;
@@ -181,14 +181,16 @@ namespace Client
 			// Impossible to create or change file here
 			return System.IO.File.Exists(Init.ConfFile);
         }
-        #endregion
-        #region constructor
-        public CidsClient(String uuid,String Server,bool test=true) // for test
+		#endregion
+		#region constructor
+
+		// 摘要
+		//	专用于测试的构造函数
+		public CidsClient(String uuid,String Server) // for test
         {
 			MainServer = IPAddress.Parse(Server);
 			//Client = new UdpClient(new IPEndPoint(IPAddress.Any,65500)); // something may err here
 			Client = new UdpClient();
-			this.Test = test;
         }
         public CidsClient(String server=null)
         {
@@ -232,9 +234,9 @@ namespace Client
 
 			// Recv Information
 			System.Threading.Tasks.Task.Factory.StartNew(()=> { // endless block and wait
-				if (Test){
-					Console.WriteLine("Init Task to Get Mirror Ip");
-				}
+#if Test
+				Console.WriteLine("Init Task to Get Mirror Ip");
+#endif
 				// get MainServer Response
 				// get mirror ip
 				byte[] getip=Client.Receive(ref remote);
@@ -244,9 +246,9 @@ namespace Client
             // SendTimes(Gram,ClientTool.ToMainRequestLength, remote);
 
 			do{ // send until receive
-				if (Test){
-					Console.WriteLine($"\nSend for Mirror IP {SendTime} times");
-				}
+#if Test
+				Console.WriteLine($"\nSend for Mirror IP {SendTime} times");
+#endif
 				// Gram[7] equals 0
 				SendTimes(Gram, ClientTool.ToMainRequestLength, remote); // The first send
 				System.Threading.Thread.Sleep(ClientTool.SendGapTime); // 3-5 seconds
@@ -276,9 +278,9 @@ namespace Client
 				System.Threading.Tasks.Task.Factory.StartNew(() =>
             #region Task
             { // endless block and wait
-                if (Test){
-					Console.WriteLine("Init Task to Get Update Information");
-				}
+#if Test
+				Console.WriteLine("Init Task to Get Update Information");
+#endif
 				// get Mirror Response
 				// get Update Information
 				byte[] JsonText; // Content Received
@@ -289,11 +291,10 @@ namespace Client
 				// convert to string
 				String MRecv = System.Text.Encoding.UTF8.GetString(JsonText); // Recv UTF8 String
 				RecvJson = Newtonsoft.Json.JsonConvert.DeserializeObject<Json.MirrorReceive>(MRecv);
-				if (Test)
-				{
-					Console.WriteLine("Get Update Information\nJson:\n");
-					Console.WriteLine(MRecv);
-				}
+#if Test
+				Console.WriteLine("Get Update Information\nJson:\n");
+				Console.WriteLine(MRecv);
+#endif
 				System.Threading.Interlocked.Increment(ref success); // unlock i.e. break loop
 				if (RecvJson.NeedUpdate) // update time if  need
 				{

@@ -1,62 +1,69 @@
 ﻿using System;
 using System.IO;
-using System.Runtime.InteropServices;
 using System.Text;
 using Newtonsoft.Json;
 
-static class Temp
+namespace Client
 {
-    static void write(string content)
+    static class Temp
     {
-        Console.WriteLine(content);
-    }
-    static void Main()
-    {
-        //write(File.Exists(@"C:\a\b\c") ? "null" : "False");
-        //write(Client.Init.Configuration().ToString());
-        //WPSave();
-        //desk();
-        //Client.Test.ShowTest.SeriesShow();
-        Client.Test.JsonTest.Bundle();
-        //LMBTest();
-        //EnvTest();
-        //PFT();
-    }
-    
-    static void desk()
-    {
-        write(Environment.GetFolderPath(Environment.SpecialFolder.Desktop));
-        write(Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory));
-        write(Environment.GetFolderPath(Environment.SpecialFolder.CommonDesktopDirectory));
-    }
-    
-    public static void LMBTest()
-    {
-        Client.Message.TimedMsgBox.TimedMessageBox("null msg", 10000);
-        for(int i = 0; i < 10; ++i)
+        static void write(string content)
         {
-            System.Threading.Thread.Sleep(1000);
-            Console.WriteLine(i);
+            Console.WriteLine(content);
         }
-    }
-    public static void PFT()
-    {
-        Console.WriteLine(File.ReadAllText(@"C:\Program Files (x86)\Cids\Cids.conf"));
-        //File.WriteAllText(@"C:\Program Files (x86)\Cids\Cids.conf", "1234567");
-    }
-    static void EnvTra()
-    {
-        var v = Environment.GetEnvironmentVariables(EnvironmentVariableTarget.Machine);
-    }
-    public static void EnvTest()
-    {
-        //Console.WriteLine(Environment.GetEnvironmentVariable("Program Files", EnvironmentVariableTarget.Machine));
-        //Console.WriteLine(Environment.GetEnvironmentVariable("ProgramFiles", EnvironmentVariableTarget.Machine));
-        //Console.WriteLine(Environment.GetEnvironmentVariable("ProgramFiles", EnvironmentVariableTarget.User));
-        //Console.WriteLine(Environment.GetEnvironmentVariable("Program Files", EnvironmentVariableTarget.User));
-        Console.WriteLine(Environment.GetEnvironmentVariable("ProgramFiles", EnvironmentVariableTarget.Process));
-        //Console.WriteLine(Environment.GetEnvironmentVariable("Program Files", EnvironmentVariableTarget.Process));
-        Console.WriteLine(Environment.GetEnvironmentVariables(EnvironmentVariableTarget.Machine));
+        static void Main()
+        {
+            //write(File.Exists(@"C:\a\b\c") ? "null" : "False");
+            //write(Client.Init.Configuration().ToString());
+            //WPSave();
+            //desk();
+            //Client.Test.ShowTest.SeriesShow();
+            //Client.Test.JsonTest.Bundle();
+    #if Test
+            Console.WriteLine("Defined");
+    #else
+            Console.WriteLine("Not Defined");
+    #endif
+            //LMBTest();
+            //EnvTest();
+            //PFT();
+        }
+    
+        static void desk()
+        {
+            write(Environment.GetFolderPath(Environment.SpecialFolder.Desktop));
+            write(Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory));
+            write(Environment.GetFolderPath(Environment.SpecialFolder.CommonDesktopDirectory));
+        }
+    
+        public static void LMBTest()
+        {
+            Client.Message.TimedMsgBox.TimedMessageBox("null msg", 10000);
+            for(int i = 0; i < 10; ++i)
+            {
+                System.Threading.Thread.Sleep(1000);
+                Console.WriteLine(i);
+            }
+        }
+        public static void PFT()
+        {
+            Console.WriteLine(File.ReadAllText(@"C:\Program Files (x86)\Cids\Cids.conf"));
+            //File.WriteAllText(@"C:\Program Files (x86)\Cids\Cids.conf", "1234567");
+        }
+        static void EnvTra()
+        {
+            var v = Environment.GetEnvironmentVariables(EnvironmentVariableTarget.Machine);
+        }
+        public static void EnvTest()
+        {
+            //Console.WriteLine(Environment.GetEnvironmentVariable("Program Files", EnvironmentVariableTarget.Machine));
+            //Console.WriteLine(Environment.GetEnvironmentVariable("ProgramFiles", EnvironmentVariableTarget.Machine));
+            //Console.WriteLine(Environment.GetEnvironmentVariable("ProgramFiles", EnvironmentVariableTarget.User));
+            //Console.WriteLine(Environment.GetEnvironmentVariable("Program Files", EnvironmentVariableTarget.User));
+            Console.WriteLine(Environment.GetEnvironmentVariable("ProgramFiles", EnvironmentVariableTarget.Process));
+            //Console.WriteLine(Environment.GetEnvironmentVariable("Program Files", EnvironmentVariableTarget.Process));
+            Console.WriteLine(Environment.GetEnvironmentVariables(EnvironmentVariableTarget.Machine));
+        }
     }
 }
 

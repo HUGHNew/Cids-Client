@@ -90,15 +90,16 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
+    <None Include="test\json\conf.json" />
+    <None Include="test\json\conflogo.json" />
     <None Include="test\json\empty.json" />
     <None Include="test\json\emptyMsg.json" />
     <None Include="test\json\json.log" />
     <None Include="test\json\lastEvent.json" />
-    <None Include="test\json\min.json" />
+    <None Include="test\json\lastOne.json" />
     <None Include="test\json\NoUpdate.json" />
     <None Include="test\json\noUrl.json" />
     <None Include="test\json\recity.json" />
-    <None Include="test\json\recv.json" />
     <None Include="test\json\t0.json" />
   </ItemGroup>
   <ItemGroup>

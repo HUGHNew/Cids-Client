@@ -13,7 +13,7 @@ namespace Client.Image
     class ImageConf
     {
         #region Const or Readonly and Function for getting a destination file
-        private static readonly string[] DstFiles = { "wp0.bmp", "wp1.bmp" };
+        private static readonly string[] DstFiles = { "wp0.jpg", "wp1.jpg" };
         private static bool UseZero = true;
         // 摘要
         //  将 UseZero 取反 然后返回当前值
@@ -163,7 +163,7 @@ namespace Client.Image
 
                 boxPoint.Y += boxWH.Height;
             }
-            img.Save(savePath, System.Drawing.Imaging.ImageFormat.Bmp);
+            img.Save(savePath, System.Drawing.Imaging.ImageFormat.Jpeg);
         }
         // 把字画在图上
         private void DrawText(ref Graphics g,Cource c,Rectangle rec,int leftPadding,Font headFont,Font textFont,int cols=5,int text1=2,int text2=3)
@@ -191,7 +191,7 @@ namespace Client.Image
     };
     public class Operation{
         // 摘要:
-        //     获取图片路径 更改图片 生成图片路径为 wp[01].bmp
+        //     获取图片路径 更改图片 生成图片路径为 wp[01].jpg
         // 参数:
         //  picture: 下载的图片路径
         //  data   : 收到的数据
@@ -209,7 +209,7 @@ namespace Client.Image
             return destPic;
         }
         // 摘要
-        //  基于 raw.bmp 和 json 的数据 合成一张新的 课程表图片
+        //  基于 raw.jpg 和 json 的数据 合成一张新的 课程表图片
         // 返回
         //  图片的绝对路径名
         public static string GraphicsCompose(Json.MirrorReceive data)
@@ -219,7 +219,7 @@ namespace Client.Image
         [DllImport("user32.dll", CharSet = CharSet.Auto)]
         static extern int SystemParametersInfo(int uAction, int uParam, StringBuilder lpvParam, int fuWinIni); // get current Wallpaper path
         // 摘要
-        //  将当前壁纸拷贝到 raw.bmp
+        //  将当前壁纸拷贝到 raw.jpg
         public static void CopyDefaultWallpaperToRaw()
         {
             const int SPI_GETDESKWALLPAPER = 0x0073;
