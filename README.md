@@ -29,7 +29,7 @@
   - [x] Json
     - [x] Conf:Logo Err
     - [x] Recv
-  - [ ] 图片合成和保存
+  - [x] 图片合成和保存
   - [ ] C/S
   - [ ] download
 

@@ -12,7 +12,9 @@ namespace Client.Test
         public const string filepath = "../../test/img/";
         public static void t0()
         {
-            for(int i = 0; i < 4; ++i)
+            var files=Directory.EnumerateFiles(filepath);
+            int i = 0;
+            foreach(var it in files)
             {
                 CourceBoxes cb = new CourceBoxes();
                 Json.ReceiveComponent.ReadableEvent re = new Json.ReceiveComponent.ReadableEvent("编程原理实战与击剑技术",42, "Everyone");
@@ -22,13 +24,13 @@ namespace Client.Test
                 //    Professor = "Everyone"
                 //};
                 cb.Add(new Cource(re));
-                re=new Json.ReceiveComponent.ReadableEvent("编程原理实战与击剑技术", 0, "Everyone");
+                re=new Json.ReceiveComponent.ReadableEvent("击剑技术", 9, "金轮");
                 cb.Add(new Cource(re));
                 //cb.Add(new CourceBoxes.Cource(re));
                 //cb.Add(new CourceBoxes.Cource("正方形打野", Color.Black, "直播间：606118", Color.Red, "韩金轮", Color.Green, Color.DarkGray, Color.LightGray));
                 //cb.Add(new CourceBoxes.Cource("吉吉圣经解读", Color.Black, "直播间：12306", Color.Red, "棍爹", Color.Green, Color.DarkGray, Color.LightGray));
                 //cb.Add(new CourceBoxes.Cource("极上の肉体、最高のSEX 全ての理想を叶える究极射精スペシャル", Color.Black, "直播间：SSIS-062", Color.Red, "三上悠亜", Color.Green, Color.DarkGray, Color.LightGray));
-                cb.DrawImageSaveAs(new Bitmap(filepath+$"{i}.jpg", true), filepath + $"test{i}.png");
+                cb.DrawImageSaveAs(new Bitmap(it, true), filepath + $"test{i++}.jpg");
             }
         }
         [DllImport("user32.dll", CharSet = CharSet.Auto)]

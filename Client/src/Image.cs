@@ -193,20 +193,32 @@ namespace Client.Image
         // 摘要:
         //     获取图片路径 更改图片 生成图片路径为 wp[01].jpg
         // 参数:
-        //  picture: 下载的图片路径
+        //  BasePicture: 下载的图片路径
+        //  data        : 收到的数据
+        //  SavePath    : 图片保存路径
+        // 返回:
+        //      返回 图片绝对路径名
+        public static string GraphicsCompose(Json.MirrorReceive data, string BasePicture,string SavePath)
+        {
+            CourceBoxes boxes = new CourceBoxes();
+            boxes.Add(new Cource(data.Event.GetReadable()));
+            boxes.Add(new Cource(data.Next_event.GetReadable()));
+            boxes.DrawImageSaveAs(new Bitmap(BasePicture, true), SavePath);
+            return SavePath;
+        }
+        // 摘要:
+        //     获取图片路径 更改图片 生成图片路径为 wp[01].jpg
+        // 参数:
+        //  BasePicture: 下载的图片路径
         //  data   : 收到的数据
         // 返回:
         //      返回 图片绝对路径名
         public static string GraphicsCompose(Json.MirrorReceive data, string BasePicture)
         {
-            CourceBoxes boxes = new CourceBoxes();
-            boxes.Add(new Cource(data.Event.GetReadable()));
-            boxes.Add(new Cource(data.Next_event.GetReadable()));
             string destPic = Path.Combine(
                 Data.ConfData.CidsImagePath,
                 ImageConf.GetDestFile());
-            boxes.DrawImageSaveAs(new Bitmap(BasePicture, true),destPic);
-            return destPic;
+            return GraphicsCompose(data, BasePicture, destPic);
         }
         // 摘要
         //  基于 raw.jpg 和 json 的数据 合成一张新的 课程表图片

@@ -23,7 +23,8 @@ namespace Client
             Console.WriteLine("Defined");
     #else
             Console.WriteLine("Not Defined");
-    #endif
+#endif
+            Test.ImgTest.t0();
             //LMBTest();
             //EnvTest();
             //PFT();
