@@ -20,19 +20,19 @@ namespace Client.Test
         //  %Cids%Conf test
         public static void ConfTest(string filename)
         {
-            Console.WriteLine("\nConf Test Begin Here\n");
+            Console.WriteLine("\nConf DEBUG Begin Here\n");
             var json = JsonConvert.DeserializeObject<Conf>(File.ReadAllText(FilePath(filename)));
             Console.WriteLine(JsonConvert.SerializeObject(json));
             Console.WriteLine(json.Logo ?? "Null Logo");
-            Console.WriteLine("\nConf Test Ends  Here\n");
+            Console.WriteLine("\nConf DEBUG Ends  Here\n");
         }
         public static void ConfTest(string filename, StreamWriter writer)
         {
-            writer.WriteLine("\nConf Test Begin Here\n");
+            writer.WriteLine("\nConf DEBUG Begin Here\n");
             var json = JsonConvert.DeserializeObject<Conf>(File.ReadAllText(FilePath(filename)));
             writer.WriteLine(JsonConvert.SerializeObject(json));
             writer.WriteLine(json.Logo ?? "Null Logo");
-            writer.WriteLine("\nConf Test Ends  Here\n");
+            writer.WriteLine("\nConf DEBUG Ends  Here\n");
         }
         public static void newlytest()
         {

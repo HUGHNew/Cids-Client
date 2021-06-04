@@ -1,5 +1,4 @@
-﻿#define Test
-using System;
+﻿using System;
 using System.IO;
 using System.Net.Sockets;
 using System.Net;
@@ -123,10 +122,14 @@ namespace Client
 				so.Close();
 				st.Close();
 			}
-			catch (Exception)
+			catch (Exception e)
 			{
+#if DEBUG
+				Console.WriteLine(e.Message);
+#endif
 				return false;
 			}
+			if (File.Exists(filename)) File.Delete(filename);
 			File.Move(tmp, filename);
 			return true;
 		}
@@ -234,7 +237,7 @@ namespace Client
 
 			// Recv Information
 			System.Threading.Tasks.Task.Factory.StartNew(()=> { // endless block and wait
-#if Test
+#if DEBUG
 				Console.WriteLine("Init Task to Get Mirror Ip");
 #endif
 				// get MainServer Response
@@ -246,7 +249,7 @@ namespace Client
             // SendTimes(Gram,ClientTool.ToMainRequestLength, remote);
 
 			do{ // send until receive
-#if Test
+#if DEBUG
 				Console.WriteLine($"\nSend for Mirror IP {SendTime} times");
 #endif
 				// Gram[7] equals 0
@@ -278,7 +281,7 @@ namespace Client
 				System.Threading.Tasks.Task.Factory.StartNew(() =>
             #region Task
             { // endless block and wait
-#if Test
+#if DEBUG
 				Console.WriteLine("Init Task to Get Update Information");
 #endif
 				// get Mirror Response
@@ -291,7 +294,7 @@ namespace Client
 				// convert to string
 				String MRecv = System.Text.Encoding.UTF8.GetString(JsonText); // Recv UTF8 String
 				RecvJson = Newtonsoft.Json.JsonConvert.DeserializeObject<Json.MirrorReceive>(MRecv);
-#if Test
+#if DEBUG
 				Console.WriteLine("Get Update Information\nJson:\n");
 				Console.WriteLine(MRecv);
 #endif

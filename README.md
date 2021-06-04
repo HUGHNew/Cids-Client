@@ -31,7 +31,7 @@
     - [x] Recv
   - [x] 图片合成和保存
   - [ ] C/S
-  - [ ] download
+  - [x] download
 
 ## Update
 

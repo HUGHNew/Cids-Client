@@ -1,5 +1,4 @@
-﻿#define Test
-using System;
+﻿using System;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
@@ -10,6 +9,9 @@ namespace Client.Test
     // test class
     class UdpTest
     {
+        public static readonly string Tmp = System.IO.Path.Combine(
+            System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory), "Temp"),
+            "img");
         public static void Server()
         {
             UdpServer server = new UdpServer();
@@ -25,6 +27,11 @@ namespace Client.Test
             {
 
             }
+        }
+        public static bool DLoadTest()
+        {
+            Console.WriteLine("Path:"+Tmp);
+            return ClientTool.DownloadAbsFile("http://192.168.233.14:80/3.jpg", Tmp+"\\tmp.jpg");
         }
     }
     class UdpServer
@@ -50,7 +57,7 @@ namespace Client.Test
         public void RecvMain(ref UdpClient udp) {
             udp.Receive(ref sender); // request from client for mirror
             byte[] loop = { 127, 0, 0, 1 };
-#if Test
+#if DEBUG
             Console.WriteLine("Message received from {0}:", sender.ToString());
 #endif
             for (int i = 0; i < 10; ++i)
@@ -65,7 +72,7 @@ namespace Client.Test
             while (data==null||data?.Length < 10)
             {
                 data = udp.Receive(ref sender);
-#if Test
+#if DEBUG
                 Console.WriteLine($"Receive:{Encoding.ASCII.GetString(data)}");
 #endif
             }
@@ -83,7 +90,7 @@ namespace Client.Test
             while (data == null)
             {
                 data = udp.Receive(ref sender);
-#if Test
+#if DEBUG
                 Console.WriteLine($"HeartBeat:{Encoding.ASCII.GetString(data)}");
 #endif
             }

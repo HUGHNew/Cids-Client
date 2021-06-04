@@ -17,14 +17,13 @@ namespace Client
             //write(Client.Init.Configuration().ToString());
             //WPSave();
             //desk();
-            //Client.Test.ShowTest.SeriesShow();
-            //Client.Test.JsonTest.Bundle();
-    #if Test
-            Console.WriteLine("Defined");
-    #else
-            Console.WriteLine("Not Defined");
+            //Client.DEBUG.ShowTest.SeriesShow();
+            //Client.DEBUG.JsonTest.Bundle();
+            //DEBUG.ImgTest.t0();
+#if DEBUG
+            write("DEBUg");
 #endif
-            Test.ImgTest.t0();
+            //write(Test.UdpTest.DLoadTest()?"True":"False");
             //LMBTest();
             //EnvTest();
             //PFT();
