@@ -20,7 +20,11 @@ namespace Client.Test
             CidsClient client = new CidsClient("7123456", "127.0.0.1");
             client.SendMain();
             var json=client.SendFirstMirror();
-            CidsClient.UdpClientBeat(client,ref json);
+            //CidsClient.UdpClientBeat(client,ref json);
+            if(client.HeartBeat(ref json))
+            {
+
+            }
         }
     }
     class UdpServer
