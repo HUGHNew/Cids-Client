@@ -11,8 +11,23 @@ namespace Client
         {
             Console.WriteLine(content);
         }
+        public static void CS() { 
+            System.Threading.Tasks.Task.Factory.StartNew(() => { 
+                    Test.UdpServer.MainServer();
+                }
+            );
+            System.Threading.Thread.Sleep(100);
+            System.Threading.Tasks.Task.Factory.StartNew(() => {
+                Test.UdpServer.MirrorServer();
+                Test.UdpServer.HB();
+                }
+            );
+            Test.UdpTest.Client();
+        }
         static void Main()
         {
+            //WriteTest();
+            CS();
             //write(File.Exists(@"C:\a\b\c") ? "null" : "False");
             //write(Client.Init.Configuration().ToString());
             //WPSave();
@@ -20,9 +35,6 @@ namespace Client
             //Client.DEBUG.ShowTest.SeriesShow();
             //Client.DEBUG.JsonTest.Bundle();
             //DEBUG.ImgTest.t0();
-#if DEBUG
-            write("DEBUg");
-#endif
             //write(Test.UdpTest.DLoadTest()?"True":"False");
             //LMBTest();
             //EnvTest();

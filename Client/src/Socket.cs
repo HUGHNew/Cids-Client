@@ -1,4 +1,5 @@
-﻿using System;
+﻿//#define Connect
+using System;
 using System.IO;
 using System.Net.Sockets;
 using System.Net;
@@ -40,9 +41,14 @@ namespace Client
 		// 摘要
 		//	返回一个 指定间隔 的随机睡眠时间
 		//	min - max
+#if DEBUG
+		public static int SendGapTime => NextInt % (ConfData.SleepMin==0?2000: ConfData.SleepMin) 
+			+ (ConfData.SleepMax == 0 ? 3000 : ConfData.SleepMax);
+#else
 		public static int SendGapTime => NextInt % ConfData.SleepMin + ConfData.SleepMax;
-        #region Update And Set Wallpaper All the useful function
-        const int SPI_SETDESKWALLPAPER = 20;
+#endif
+		#region Update And Set Wallpaper All the useful function
+		const int SPI_SETDESKWALLPAPER = 20;
 		const int SPIF_UPDATEINIFILE = 0x01;
 		const int SPIF_SENDWININICHANGE = 0x02;
 		[DllImport("user32.dll", CharSet = CharSet.Auto)]
@@ -60,7 +66,7 @@ namespace Client
 		}
 		public static void SetWallpaper(string strSavePath, Style style)
 		{
-			#region Set Wall
+#region Set Wall
 			RegistryKey key = Registry.CurrentUser.OpenSubKey(@"Control Panel\Desktop", true); // get the key of desk wallpaper
 			if (style == Style.Stretched)
 			{
@@ -78,9 +84,9 @@ namespace Client
 				key.SetValue(@"TileWallpaper", 1.ToString());
 			}
 			SystemParametersInfo(SPI_SETDESKWALLPAPER, 0, strSavePath, SPIF_UPDATEINIFILE | SPIF_SENDWININICHANGE);
-			#endregion
+#endregion
 		}
-		#region Download and Set Wallpaper
+#region Download and Set Wallpaper
 		private static bool CheckValidationResult(object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors)
 		{
 			return true;
@@ -142,7 +148,7 @@ namespace Client
 			// get json
 			data = UdpClient.SendFirstMirror();
 			String ImgUrl = data.Image_url;
-			#region Download File
+#region Download File
 			// Set Attempt Limit
 			var tokenSource = new CancellationTokenSource();
 			CancellationToken token = tokenSource.Token;
@@ -152,7 +158,7 @@ namespace Client
 				UdpClient.DownLoadFail();
 				Thread.Sleep(interval);
 			}
-			#endregion//download
+#endregion//download
 			return true;
 		}
 		public static bool Update(ref Json.MirrorReceive data)
@@ -161,56 +167,84 @@ namespace Client
 			SetWallpaper();
 			return true;
 		}
-        #endregion
-        #endregion//Migrate to here
+#endregion
+#endregion//Migrate to here
     }
     public class CidsClient
 	{
-		#region private property
-		private readonly UdpClient Client;
+#region private property
+		private readonly UdpClient Client = new UdpClient();
         private String lastTime=null,MirrorIP=null;
-        #endregion
+		#endregion
+#if DEBUG
+		private string id_test = null;
+#endif
 
-        #region public property
+		#region public property
 		public static String UuId => ConfData.UuId;
 		public const int DefaultPackageNumber = 10;
-        #endregion
+#endregion
         public String Mirror => MirrorIP;
 		public IPAddress MainServer;
 
-        #region initilization uuid file or get uuid from conf file
+#region initilization uuid file or get uuid from conf file
 		static public bool ConfCheck()
         {
 			// Impossible to create or change file here
 			return System.IO.File.Exists(Init.ConfFile);
         }
-		#endregion
-		#region constructor
+#endregion
+#region constructor
 
 		// 摘要
 		//	专用于测试的构造函数
 		public CidsClient(String uuid,String Server) // for test
         {
-			MainServer = IPAddress.Parse(Server);
 			//Client = new UdpClient(new IPEndPoint(IPAddress.Any,65500)); // something may err here
-			Client = new UdpClient();
+			CidsClientInit(Server);
+			this.id_test = uuid;
         }
-        public CidsClient(String server=null)
+        #region Init Part of UdpClient
+        private void CidsClientInit()
         {
-			MainServer = server == null ? ConfData.DefaultMServer : IPAddress.Parse(server);
-			Client = new UdpClient();
-			//Client.Connect(MainServer, MainPort);
+			CidsClientInit(ConfData.DefaultMServer);
+        }
+		private void CidsClientInit(String server)
+		{
+			CidsClientInit(IPAddress.Parse(server));
 		}
-        #endregion
+		private void CidsClientInit(IPAddress server)
+		{
+			MainServer = server;
+#if Connect
+			Client.Connect(MainServer, ConfData.MainPort);
+#endif
+		}
+#endregion
+        public CidsClient()
+		{
+			CidsClientInit();
+		}
+		public CidsClient(String server)
+        {
+			CidsClientInit(server == null ? ConfData.DefaultMServer : IPAddress.Parse(server));
+		}
+#endregion
 		public void DownLoadFail()
         {
 			lastTime = null;
         }
-        private void SendTimes(byte[]data,int bytes,IPEndPoint end,int times= DefaultPackageNumber)
+        private void SendTimes(byte[]data,int bytes,IPEndPoint end=null,int times= DefaultPackageNumber)
         {
 			for(int i = 0; i < times; ++i)
             {
-				Client.Send(data, bytes, end);
+				if (end == null) // Think it is Connected
+				{
+					Client.Send(data, bytes);
+				}
+				else { 
+					Client.Send(data, bytes, end);
+				}
 				System.Threading.Thread.Sleep(ConfData.SendDelayTime);
             }
         }
@@ -231,12 +265,28 @@ namespace Client
 		public String SendMain(byte InitSendTime=2)
         {
 			int GetMirrorIp = 0;
-			byte[] Gram = ClientTool.GetOctByte(ConfData.UuId);
-			IPEndPoint remote = new IPEndPoint(MainServer, ConfData.MainPort);
+			string id;
+			int mainPort;
+#if DEBUG
+
+			id = id_test;
+			mainPort = 20800 ;
+#else
+			id=ConfData.UuId;
+			mainPort = ConfData.MainPort;
+#endif
+			byte[] Gram = ClientTool.GetOctByte(id);
+#if Connect
+			//IPEndPoint remote = new IPEndPoint(IPAddress.Any, 0);
+			IPEndPoint remote = new IPEndPoint(MainServer, mainPort);
+#else
+			IPEndPoint remote = new IPEndPoint(MainServer, mainPort);
+#endif
 			byte SendTime = InitSendTime;
 
 			// Recv Information
 			System.Threading.Tasks.Task.Factory.StartNew(()=> { // endless block and wait
+				Thread.Sleep(100);
 #if DEBUG
 				Console.WriteLine("Init Task to Get Mirror Ip");
 #endif
@@ -253,7 +303,11 @@ namespace Client
 				Console.WriteLine($"\nSend for Mirror IP {SendTime} times");
 #endif
 				// Gram[7] equals 0
-				SendTimes(Gram, ClientTool.ToMainRequestLength, remote); // The first send
+#if Connect
+				SendTimes(Gram, ClientTool.ToMainRequestLength); // The first send
+#else
+				SendTimes(Gram, ClientTool.ToMainRequestLength,remote); // The first send
+#endif
 				System.Threading.Thread.Sleep(ClientTool.SendGapTime); // 3-5 seconds
 				Gram[7] = SendTime; // time increase
 				if (SendTime !=1 && SendTime != byte.MaxValue - 1) // limit 254 and lock 1
@@ -261,6 +315,16 @@ namespace Client
 					++SendTime;
 				}
 			} while (System.Threading.Interlocked.Equals(GetMirrorIp,0));
+#if Connect
+			int port;
+#if DEBUG
+			port = 20801;
+#else
+			port=ConfData.MirrorPort;
+#endif
+			Client.Close();
+			Client.Connect(IPAddress.Parse(MirrorIP), port);
+#endif
 			return MirrorIP;
 		}
 		// 摘要
@@ -270,16 +334,24 @@ namespace Client
 		//	
 		private Json.MirrorReceive SendMirror(int SleepTimeMilli,bool MustGet=true)
         {
-			//Client.Connect(IPAddress.Parse(MirrorIP), MirrorPort); 
 			Json.MirrorReceive RecvJson=null;
+#if Connect
+			// new one for para
+			IPEndPoint remote = new IPEndPoint(IPAddress.Any, 0);
+#else
+#if DEBUG
+			IPEndPoint remote = new IPEndPoint(IPAddress.Parse(MirrorIP), 20801); // mirror remote
+#else
 			IPEndPoint remote = new IPEndPoint(IPAddress.Parse(MirrorIP), ConfData.MirrorPort); // mirror remote
+#endif//DEBUG
+#endif//Connect
 			int success = 0;
-            #region a timer need to recv in  a limited time
+#region a timer need to recv in  a limited time
             // get the update msg
-			#region A Task for Udp Recv LOOP until get json
+#region A Task for Udp Recv LOOP until get json
 			System.Threading.Tasks.Task task = 
 				System.Threading.Tasks.Task.Factory.StartNew(() =>
-            #region Task
+#region Task
             { // endless block and wait
 #if DEBUG
 				Console.WriteLine("Init Task to Get Update Information");
@@ -287,9 +359,16 @@ namespace Client
 				// get Mirror Response
 				// get Update Information
 				byte[] JsonText; // Content Received
+
 				do // receive and judge if it's the main response
 				{
 					JsonText = Client.Receive(ref remote);
+#if DEBUG
+					foreach(var it in JsonText)
+                    {
+						Console.Write(it);
+                    }Console.WriteLine();
+#endif
 				} while (JsonText.Length == 4); // throw the extra Ip packages
 				// convert to string
 				String MRecv = System.Text.Encoding.UTF8.GetString(JsonText); // Recv UTF8 String
@@ -304,25 +383,38 @@ namespace Client
 					lastTime = RecvJson.Time;
 				}
 			}
-            #endregion// end of task
+#endregion// end of task
             );
-            #endregion// Recv Task
-            
-            #endregion// end of a timer need
-            String StoMirror = ClientTool.ComposeMirrorRequest(ConfData.UuId, lastTime); // the MSG will be sent to mirror
+			#endregion// Recv Task
+
+			#endregion// end of a timer need
+
+#if DEBUG
+			string id = id_test ?? ConfData.UuId;
+			String StoMirror = ClientTool.ComposeMirrorRequest(id, lastTime); // the MSG will be sent to mirror
+#else
+			String StoMirror = ClientTool.ComposeMirrorRequest(ConfData.UuId, lastTime); // the MSG will be sent to mirror
+#endif
 			byte[] JsonBytes = System.Text.Encoding.ASCII.GetBytes(StoMirror);
 
 
 			// send request
 			do{
 				// Sleep Set
+#if Connect
+				SendTimes(JsonBytes,JsonBytes.Length);
+#else
 				SendTimes(JsonBytes,JsonBytes.Length,remote);
+#endif
 				System.Threading.Thread.Sleep(SleepTimeMilli);
-            } while (System.Threading.Interlocked.Equals(success, 0)&&MustGet);
+            } while (System.Threading.Interlocked.Equals(success, 0));
+			/** Loop Condition
+			 * not recv now
+			 */ 
 			if (false == MustGet) // Wait half second and check
 			{
 				//task.Wait(SleepTimeMilli >> 1);
-				#region HalfPack
+#region HalfPack
 				try { 
 					if (false==task.Wait(SleepTimeMilli >> 1)) { // not complete
 						// 半包可能吗?
@@ -330,7 +422,7 @@ namespace Client
 				}catch(Newtonsoft.Json.JsonSerializationException) { // just capture is ok
 					//RecvJson = null;
 				}
-                #endregion//Half package
+#endregion//Half package
                 //System.Threading.Thread.Sleep(SleepTimeMilli >> 1);
             }
             return RecvJson;

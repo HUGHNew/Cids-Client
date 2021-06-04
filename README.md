@@ -30,7 +30,7 @@
     - [x] Conf:Logo Err
     - [x] Recv
   - [x] 图片合成和保存
-  - [ ] C/S
+  - [x] C/S
   - [x] download
 
 ## Update
