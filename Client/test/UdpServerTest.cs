@@ -1,9 +1,9 @@
-﻿using System;
+﻿#define Heart
+using System;
 using System.Net;
 using System.IO;
 using System.Net.Sockets;
 using System.Text;
-using System.Windows.Forms;
 
 namespace Client.Test
 {
@@ -18,6 +18,12 @@ namespace Client.Test
         {
             UdpServer server = new UdpServer();
             server.ServerOn();
+        }
+        public static void ClientCenterOnly()
+        {
+            CidsClient client = new CidsClient("7123456", "192.168.233.14");
+            string ip=client.SendMain();
+            Console.WriteLine(ip);
         }
         public static void Client()
         {
@@ -118,17 +124,25 @@ namespace Client.Test
         public static void HB()
         {
             byte[] data = null;
-            UdpClient udp = new UdpClient(new IPEndPoint(IPAddress.Any, 20801));
+            UdpClient udp = mirror;
+#if Heart
             while (data == null)
             {
-                data = udp.Receive(ref end);
-#if DEBUG
-                mirrorlog.WriteLine($"HeartBeat:{Encoding.ASCII.GetString(data)}");
 #endif
+                while (data == null)
+                {
+                    data = udp.Receive(ref end);
+    #if DEBUG
+                    mirrorlog.WriteLine($"HeartBeat:{Encoding.ASCII.GetString(data)}");
+    #endif
+                }
+                string json = System.IO.File.ReadAllText("../../test/json/NoUpdate.json");
+                data = Encoding.UTF8.GetBytes(json);
+                udp.Send(data, data.Length, end);
+#if Heart
+                data = null;
             }
-            string json = System.IO.File.ReadAllText("../../test/json/NoUpdate.json");
-            data = Encoding.UTF8.GetBytes(json);
-            udp.Send(data, data.Length, end);
+#endif
         }
     }
 }

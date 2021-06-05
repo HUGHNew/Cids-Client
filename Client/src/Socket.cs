@@ -364,10 +364,10 @@ namespace Client
 				{
 					JsonText = Client.Receive(ref remote);
 #if DEBUG
-					foreach(var it in JsonText)
-                    {
-						Console.Write(it);
-                    }Console.WriteLine();
+					//foreach(var it in JsonText)
+     //               {
+					//	Console.Write(it);
+     //               }Console.WriteLine();
 #endif
 				} while (JsonText.Length == 4); // throw the extra Ip packages
 				// convert to string

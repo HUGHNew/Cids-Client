@@ -21,7 +21,7 @@ GetUrl --got--> Download ==Mirror==> GetJson --Join-->set--next_time-->GetJson
 ### todo
 
 -   [] Environment
-    -   [] Cids:`%ProgramFiles%\Cids` Process[ProgramFIles]
+    -   [] Cids:`%ProgramFiles%\Cids` Process[ProgramFiles]
     -   [] CidsUUID:id
 -   
 

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Newtonsoft.Json;
 
 namespace Client {
 
@@ -120,6 +121,7 @@ namespace Client {
                 public string Main_Ip { get; set; }
                 public int Main_Port { get; set; }
                 public int Mirror_Port { get; set; }
+                [JsonIgnore]
                 public bool IPv4 => Main_Ip.Contains("."); // need to be transient
             }
             public class TimeData
