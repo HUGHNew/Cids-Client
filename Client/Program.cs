@@ -17,7 +17,9 @@ namespace Client
             //scatter();
             //tmptest();
             //RegisrtyTest();
-            NetTest();
+            //NetTest();
+            //Test.UdpTest.ClientCenterOnly();
+            Test.UdpTest.TcpTimeOutTest();
             //halfpack();
             //emptyList();
             //imgt0();

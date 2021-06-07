@@ -144,6 +144,7 @@ namespace Client {
         {
             public ConfComponent.NetData Net { get; set; }
             public ConfComponent.TimeData Time { get; set; }
+            public int Protocol { get; set; }
             public string Logo { get; set; }
         }
     }

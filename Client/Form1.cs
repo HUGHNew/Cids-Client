@@ -49,7 +49,7 @@ namespace Client
                 ClientTool.time_out, ClientTool.interval);
             ClientTool.Update(ref data);
             Client.Message.Show.MessageShow(data.Message);
-            CidsClient.UdpClientBeat(UdpClient,ref data);
+            CidsClient.ClientBeat(UdpClient,ref data);
         }
         private void BGWorkerMain_RunWorkerCompleted(object sender, System.ComponentModel.RunWorkerCompletedEventArgs e)
         {

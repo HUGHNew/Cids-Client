@@ -20,10 +20,11 @@ GetUrl --got--> Download ==Mirror==> GetJson --Join-->set--next_time-->GetJson
 
 ### todo
 
--   [] Environment
-    -   [] Cids:`%ProgramFiles%\Cids` Process[ProgramFiles]
-    -   [] CidsUUID:id
--   
+-   [x] Environment
+    -   [x] Cids:`%ProgramFiles%\Cids` Process[ProgramFiles]
+    -   [x] CidsUUID:id
+
+
 
 
 
@@ -161,7 +162,9 @@ graph LR
             "max":_num
         },
     },
-	"logo":""//toast 的 logo 就是弹出消息的一个图片 可以 install 的时候放进去 似乎定为默认字段就好了
+	"logo":"",//toast 的 logo 就是弹出消息的一个图片 可以 install 的时候放进去 似乎定为默认字段就好了
+    "protocol":__num// mirror protocol
+    //1 -- Udp,2 -- Tcp,3 -- Quic
 }
 ```
 
@@ -175,7 +178,7 @@ graph LR
 
 下载到`Init.CidsPath` 图片保存在 `raw.jpg`
 
--   [] 拼接的图片放在`image`下 从 0 开始编号 每次拼接后选取值最大的
+-   [ ] 拼接的图片放在`image`下 从 0 开始编号 每次拼接后选取值最大的
 
 -   [x] 每次更新后保存两次的图片
     -   命名为`{wp0.jpg,wp1.jpg}`

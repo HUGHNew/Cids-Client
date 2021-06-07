@@ -17,7 +17,7 @@ namespace Client
             public const string Conf = "CidsConf.json"; // configuration file
             #endregion
             #region Top Level Variable
-            public static EnvironmentVariableTarget Target = EnvironmentVariableTarget.Machine;
+            public const EnvironmentVariableTarget Target = EnvironmentVariableTarget.Machine;
             public static readonly string CidsTmpPath =
                 Path.Combine(Environment.GetEnvironmentVariable("TMP", Target),EnvName);
             public static readonly string CidsPath = // Get Path First
@@ -29,7 +29,7 @@ namespace Client
 
             #region Socket
             public const int DefaultPackageNumber = 10;
-            public readonly static int MainPort, MirrorPort;
+            public readonly static int MainPort, MirrorPort,MirrorProtocol;
             public readonly static IPAddress DefaultMServer; // Server IP need
 
             public readonly static int MirrorRecvLimit; // counts limit
@@ -73,6 +73,7 @@ namespace Client
                 #endregion
 
                 #region Socket
+                MirrorProtocol = InitData.Protocol;
                 DefaultMServer = IPAddress.Parse(InitData.Net.Main_Ip);
                 MainPort = InitData.Net.Main_Port;
                 MirrorPort = InitData.Net.Mirror_Port;

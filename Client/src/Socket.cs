@@ -1,4 +1,5 @@
 ﻿//#define Connect
+#define TCPMirror
 using System;
 using System.IO;
 using System.Net.Sockets;
@@ -11,6 +12,7 @@ using System.Net.Security;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using System.Threading;
+using System.Collections.Generic;
 
 namespace Client
 {
@@ -168,13 +170,21 @@ namespace Client
 			return true;
 		}
 #endregion
-#endregion//Migrate to here
+		#endregion//Migrate to here
     }
-    public class CidsClient
+	public class CidsClient
 	{
-#region private property
+		public enum MirrorProtocol:int{
+			Udp=1,Tcp,Quic
+		}
+		#region private property
 		private readonly UdpClient Client = new UdpClient();
         private String lastTime=null,MirrorIP=null;
+		private MirrorProtocol Protocol;
+
+		private TcpClient TcpMirror=null;
+		private System.Text.StringBuilder Last;
+		private int bracket=0;
 		#endregion
 #if DEBUG
 		private string id_test = null;
@@ -183,6 +193,7 @@ namespace Client
 		#region public property
 		public static String UuId => ConfData.UuId;
 		public const int DefaultPackageNumber = 10;
+		public const int MirrorEmptyRate = 100;
 #endregion
         public String Mirror => MirrorIP;
 		public IPAddress MainServer;
@@ -216,6 +227,7 @@ namespace Client
 		private void CidsClientInit(IPAddress server)
 		{
 			MainServer = server;
+			Protocol = (MirrorProtocol)(ConfData.MirrorProtocol);
 #if Connect
 			Client.Connect(MainServer, ConfData.MainPort);
 #endif
@@ -248,11 +260,12 @@ namespace Client
 				System.Threading.Thread.Sleep(ConfData.SendDelayTime);
             }
         }
-		// 摘要
-		//	重发数据报给 MainServer 并告知服务器重发原因
-		// 返回
-		//	Mirror IP
-		public String ReSendMain()
+        #region Main Communications
+        // 摘要
+        //	重发数据报给 MainServer 并告知服务器重发原因
+        // 返回
+        //	Mirror IP
+        public String ReSendMain()
         {
 			return SendMain(1);
         }
@@ -325,14 +338,132 @@ namespace Client
 			Client.Close();
 			Client.Connect(IPAddress.Parse(MirrorIP), port);
 #endif
+            switch (Protocol)
+            {
+				case MirrorProtocol.Udp:
+					break;
+				case MirrorProtocol.Quic:
+					break;
+				case MirrorProtocol.Tcp:
+		#if DEBUG
+					TcpMirror = new TcpClient(MirrorIP, 20801);
+		#else
+					TcpMirror = new TcpClient(MirrorIP, ConfData.MirrorPort);
+		#endif// Debug
+					break;
+			}
 			return MirrorIP;
 		}
+        #endregion//Main Com
+#if DEBUG
+        public CidsClient SetMirrorIp(String ip)
+        {
+			MirrorIP = ip;
+            if (Protocol == MirrorProtocol.Tcp)
+            {
+				TcpMirror.Close();
+				TcpMirror = new TcpClient(MirrorIP, 20801);
+			}
+			return this;
+        }
+#endif
+		#region Mirror Communication
+		private Json.MirrorReceive SendMirror(int SleepTimeMilli, bool MustGet = true)
+        {
+			switch (Protocol) {
+				case MirrorProtocol.Udp:
+					return UdpSendMirror(SleepTimeMilli,MustGet);
+				case MirrorProtocol.Tcp:
+					return TcpSendMirror(SleepTimeMilli,MustGet);
+				case MirrorProtocol.Quic:
+				default:
+					return null;
+			}
+        }
+		public Json.MirrorReceive SendFirstMirror() {
+			return SendMirror(ClientTool.SendGapTime); // sleep 3-5 seconds each gap
+		}
+		// 摘要:
+		//		发送心跳包 检查Mirror是否存活 需要外部计时计数
+		// 返回:
+		//		收到信息状态
+		//		0 -- 没收到
+		//		1 -- 当前没有更新或半包
+		//		2 -- 更新
+		public int HeartBeat(ref Json.MirrorReceive data)
+        {
+			int bracketBeforeSend = bracket;
+			Json.MirrorReceive receive = SendMirror(ConfData.HeartBeatGap,false);
+            if (null == receive) // not recv
+            {
+				if (bracketBeforeSend == bracket)
+				{
+					return 0;
+				}
+				else return 1;
+            }
+            if (receive.NeedUpdate)
+            {
+				data = receive;
+				return 2;
+            }
+			return 1;
+        }
+		//	摘要:
+		//		对于心跳包的次数包装
+		//	返回:
+		//		是否在限时内获取Mirror的数据包
+		//		如果为否 则需要再次向 Main 申请 Ip
+		public bool LimitedHeartBeat(ref Json.MirrorReceive data,uint LimitTimes) {
+			uint counter = LimitTimes;
+			do
+			{
+				switch(HeartBeat(ref data)) // Mirror 存活
+				{
+					case 2: // Update
+						return true;
+					case 1: // Exist
+						counter = LimitTimes;
+						break;
+					default:break;// No Response
+				}
+			} while (--counter != 0);
+			return false;
+		}
+		public bool LimitedHeartBeat(ref Json.MirrorReceive data)
+        {
+			return LimitedHeartBeat(ref data, (uint)ConfData.MirrorRecvLimit);
+        }
 		// 摘要
-		//	给镜像服务器发送UDP包直至获取镜像服务器JSON
-		//	发送 ASCII 字节流 收取 UTF8 字节流
-		// 异常
-		//	
-		private Json.MirrorReceive SendMirror(int SleepTimeMilli,bool MustGet=true)
+		//	第一次连接 发心跳包 有问题重发 解决后续所有问题
+		public static void ClientBeat(CidsClient client,ref Json.MirrorReceive data)
+        {
+            while (true)
+            {
+				while (client.LimitedHeartBeat(ref data))
+				{
+					// update information
+					if (data.Image_url != "")
+					{
+						ClientTool.TryDownload(ref client,ref data,
+							ClientTool.time_out, ClientTool.interval);
+						ClientTool.SetWallpaper();
+					}
+					ClientTool.Update(ref data);
+				}
+				client.ReSendMain(); // Get A New Mirror In Case The Old One is Down
+            }
+        }
+		#endregion
+		#region Udp Protocol Mirror
+		//
+		// 摘要:
+		//		给镜像服务器发送UDP包直至获取镜像服务器JSON
+		//		发送 ASCII 字节流 收取 UTF8 字节流
+		//		对于心跳包类型 只发送一批数据包
+		//		对于MustGet循环发送 并等待获取
+		//
+		private Json.MirrorReceive UdpSendMirror(int SleepTimeMilli,bool MustGet=true)
         {
 			Json.MirrorReceive RecvJson=null;
 #if Connect
@@ -406,11 +537,9 @@ namespace Client
 #else
 				SendTimes(JsonBytes,JsonBytes.Length,remote);
 #endif
-				System.Threading.Thread.Sleep(SleepTimeMilli);
-            } while (System.Threading.Interlocked.Equals(success, 0));
-			/** Loop Condition
-			 * not recv now
-			 */ 
+				Thread.Sleep(SleepTimeMilli>>1);
+            } while (MustGet&&Interlocked.Equals(success, 0));
+
 			if (false == MustGet) // Wait half second and check
 			{
 				//task.Wait(SleepTimeMilli >> 1);
@@ -427,64 +556,85 @@ namespace Client
             }
             return RecvJson;
 		}
-		public Json.MirrorReceive SendFirstMirror() {
-			return SendMirror(ClientTool.SendGapTime); // sleep 3-5 seconds each gap
-		}
-		// 摘要
-		//	发送心跳包 检查Mirror是否存活 需要外部计时计数
-		// 返回
-		//	是否需要更新壁纸
-		public bool HeartBeat(ref Json.MirrorReceive data)
+		#endregion// Udp to Mirror
+		#region Tcp Protocol Mirror
+		public String TcpRecvJson(ref TcpClient tcp)
         {
-			Json.MirrorReceive receive = SendMirror(ConfData.HeartBeatGap,false);
-            if (null == receive) // not recv
-            {
-				return false;
-            }
-            if (receive.NeedUpdate)
-            {
-				data = receive;
-            }
-			return receive.NeedUpdate;
+			return TcpRecvJson(tcp.GetStream());
         }
-		// 摘要
-		//	对于心跳包的次数包装
-		// 返回
-		//	是否在限时内获取Mirror的数据包
-		//	如果为否 则需要再次向 Main 申请 Ip
-		public bool LimitedHeartBeat(ref Json.MirrorReceive data,int LimitTimes) {
-			do
+		public string TcpRecvJson(NetworkStream tcpStream)
+		{
+			List<byte> result = new List<byte>();
+			String ResultString;
+			int ch_int;
+			char ch;
+			// Get Json
+			while (true)
 			{
-				if (HeartBeat(ref data))
+				ch_int = tcpStream.ReadByte();
+				if (ch_int == -1)    //流结束
+					break;
+				else
 				{
-					return true;
-				}
-			} while (--LimitTimes != 0);
-			return false;
-		}
-		public bool LimitedHeartBeat(ref Json.MirrorReceive data)
-        {
-			return LimitedHeartBeat(ref data, ConfData.MirrorRecvLimit);
-        }
-		// 摘要
-		//	第一次连接 发心跳包 有问题重发 解决后续所有问题
-		public static void UdpClientBeat(CidsClient client,ref Json.MirrorReceive data)
-        {
-            while (true)
-            {
-				while (client.LimitedHeartBeat(ref data))
-				{
-					// update information
-					if (data.Image_url != "")
-					{
-						ClientTool.TryDownload(ref client,ref data,
-							ClientTool.time_out, ClientTool.interval);
-						ClientTool.SetWallpaper();
+					result.Add(((byte)ch_int));
+					ch = (char)ch_int;
+
+					if (ch == '{' || ch == '[') {
+						++bracket;
 					}
-					ClientTool.Update(ref data);
+					else if (ch == '}' || ch == ']'){ //这里括号一定是匹配出现的
+						--bracket;
+					}
+					if (bracket == 0) {
+						break;
+					}
 				}
-				client.ReSendMain(); // Get A New Mirror In Case The Old One is Down
+			}
+			ResultString = System.Text.Encoding.UTF8.GetString(result.ToArray());
+			Last.Append(ResultString);
+            if (bracket == 0)
+            {
+				ResultString = Last.ToString();
+				Last.Clear();
             }
-        }
-    }
+            else
+            {
+				ResultString = null;
+            }
+			return ResultString;
+		}
+		private Json.MirrorReceive TcpSendMirror(int SleepTimeMilli, bool MustGet = true)
+        {
+			Json.MirrorReceive RecvJson = null;
+
+			TcpMirror.ReceiveTimeout = SleepTimeMilli;
+
+			NetworkStream tcpStream= TcpMirror.GetStream();
+
+#if DEBUG
+            string id = id_test ?? ConfData.UuId;
+			String StoMirror = ClientTool.ComposeMirrorRequest(id, lastTime); // the MSG will be sent to mirror
+#else
+			String StoMirror = ClientTool.ComposeMirrorRequest(ConfData.UuId, lastTime); // the MSG will be sent to mirror
+#endif
+			byte[] JsonBytes = System.Text.Encoding.ASCII.GetBytes(StoMirror);
+
+			tcpStream.Write(JsonBytes,0,JsonBytes.Length);
+
+			String Json=TcpRecvJson(tcpStream);
+            if (Json != null) // Get A Json
+            {
+				try { 
+					RecvJson = Newtonsoft.Json.JsonConvert.DeserializeObject<Json.MirrorReceive>(Json);
+                }
+                catch (Exception)
+                {
+					RecvJson = null;
+                }
+            }
+
+			return RecvJson;
+		}
+		#endregion
+	}
 }

@@ -4,6 +4,8 @@ using System.Net;
 using System.IO;
 using System.Net.Sockets;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Client.Test
 {
@@ -13,29 +15,83 @@ namespace Client.Test
         public static readonly string Tmp = System.IO.Path.Combine(
             System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory), "Temp"),
             "img");
+        public const string localhost="127.0.0.1";
+        public static void TcpTimeOutTest()
+        {
+            const int port = 20000;
+            Task.Factory.StartNew(() =>
+            {
+                TcpListener listener = new TcpListener(IPAddress.Parse(localhost),port);
+                listener.Start();
+                TcpClient tcp=listener.AcceptTcpClient();
+                string half = "{\"a\":7";
+                byte[] bstr =Encoding.UTF8.GetBytes(half);
+
+                tcp.GetStream().Write(bstr,0,bstr.Length);
+                Thread.Sleep(2000);
+                tcp.GetStream().WriteByte(6);
+            });
+            TcpClient client = new TcpClient(localhost,port);
+            client.ReceiveTimeout = 1000;
+            byte[] json = new byte[32];
+            int got=client.GetStream().Read(json,0,json.Length);
+            Console.WriteLine(Encoding.UTF8.GetString(json,0, got));
+            Console.WriteLine($"got:{got}");
+            Thread.Sleep(2000);
+        }
         [Obsolete]
         public static void Server()
         {
             UdpServer server = new UdpServer();
             server.ServerOn();
         }
+        public const string uuid = "1231230";
+        public const string testCenter = "192.168.233.14";
+        public const string testMirror = "192.168.233.13";
         public static void ClientCenterOnly()
         {
-            CidsClient client = new CidsClient("7123456", "192.168.233.14");
+            CidsClient client = new CidsClient(uuid, testMirror);
             string ip=client.SendMain();
             Console.WriteLine(ip);
+            ip = client.ReSendMain();
+            Console.WriteLine(ip);
         }
+#if DEBUG
+        public static void ClienMirrorOnly() {
+            CidsClient client = new CidsClient(uuid,testCenter);
+            client.SetMirrorIp(testMirror).SendFirstMirror();
+        }
+#endif
         public static void Client()
         {
-            CidsClient client = new CidsClient("7123456", "127.0.0.1");
+            CidsClient client = new CidsClient(uuid, "127.0.0.1");
             client.SendMain();
             var json=client.SendFirstMirror();
             //CidsClient.UdpClientBeat(client,ref json);
             int beats = 0;
-            if(client.HeartBeat(ref json))
+            if(client.HeartBeat(ref json)>0)
             {
                 Console.WriteLine(beats+++" Times HeatBeat");
             }
+        }
+        public static void ClientRealTest()
+        {
+            string center = "192.168.233.14";
+            CidsClient client = new CidsClient("1231230", center);
+            Console.WriteLine("Mirror Ip:"+client.SendMain());
+            var json = client.SendFirstMirror();
+            //CidsClient.UdpClientBeat(client,ref json);
+            int beats = 0;
+            while (client.HeartBeat(ref json)>0)
+            {
+                Console.WriteLine(beats++ + " Times HeatBeat");
+                if (json.NeedUpdate)
+                {
+                    Console.WriteLine("url:" + json.Image_url);
+                    Console.WriteLine("当前课程"+json.Event.GetReadable().CourseTitle);
+                }
+            }
+            Console.WriteLine("Beat Time Out");
         }
         public static bool DLoadTest()
         {
