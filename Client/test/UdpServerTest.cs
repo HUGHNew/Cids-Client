@@ -17,29 +17,6 @@ namespace Client.Test
             "img");
         public const string localhost="127.0.0.1";
 
-        public static void TcpTimeOutTest()
-        {
-            const int port = 20000;
-            Task.Factory.StartNew(() =>
-            {
-                TcpListener listener = new TcpListener(IPAddress.Parse(localhost),port);
-                listener.Start();
-                TcpClient tcp=listener.AcceptTcpClient();
-                string half = "{\"a\":7";
-                byte[] bstr =Encoding.UTF8.GetBytes(half);
-
-                tcp.GetStream().Write(bstr,0,bstr.Length);
-                Thread.Sleep(2000);
-                tcp.GetStream().WriteByte(6);
-            });
-            TcpClient client = new TcpClient(localhost,port);
-            client.ReceiveTimeout = 1000;
-            byte[] json = new byte[32];
-            int got=client.GetStream().Read(json,0,json.Length);
-            Console.WriteLine(Encoding.UTF8.GetString(json,0, got));
-            Console.WriteLine($"got:{got}");
-            Thread.Sleep(2000);
-        }
         public static void MainZeroTest()
         {
             CidsClient client = new CidsClient(uuid, localhost);
@@ -273,6 +250,29 @@ namespace Client.Test
             Json.MirrorReceive jr=null;
             client.HeartBeat(ref jr);
             Console.WriteLine(jr == null);
+        }
+        public static void TcpTimeOutTest()
+        {
+            const int port = 20000;
+            Task.Factory.StartNew(() =>
+            {
+                TcpListener listener = new TcpListener(IPAddress.Parse(localhost), port);
+                listener.Start();
+                TcpClient tcp = listener.AcceptTcpClient();
+                string half = "{\"a\":7";
+                byte[] bstr = Encoding.UTF8.GetBytes(half);
+
+                tcp.GetStream().Write(bstr, 0, bstr.Length);
+                Thread.Sleep(2000);
+                tcp.GetStream().WriteByte(6);
+            });
+            TcpClient client = new TcpClient(localhost, port);
+            client.ReceiveTimeout = 1000;
+            byte[] json = new byte[32];
+            int got = client.GetStream().Read(json, 0, json.Length);
+            Console.WriteLine(Encoding.UTF8.GetString(json, 0, got));
+            Console.WriteLine($"got:{got}");
+            Thread.Sleep(2000);
         }
     }
 }
