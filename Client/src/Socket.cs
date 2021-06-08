@@ -49,6 +49,7 @@ namespace Client
 #else
 		public static int SendGapTime => NextInt % ConfData.SleepMin + ConfData.SleepMax;
 #endif
+		public const int NoMirrorConnectSleepFactor = 100;
 		#region Update And Set Wallpaper All the useful function
 		const int SPI_SETDESKWALLPAPER = 20;
 		const int SPIF_UPDATEINIFILE = 0x01;
@@ -183,7 +184,7 @@ namespace Client
 		private MirrorProtocol Protocol;
 
 		private TcpClient TcpMirror=null;
-		private System.Text.StringBuilder Last;
+		private readonly System.Text.StringBuilder Last;
 		private int bracket=0;
 		#endregion
 #if DEBUG
@@ -269,12 +270,12 @@ namespace Client
         {
 			return SendMain(1);
         }
-		// 摘要
-		//	给主服务器发UDP包直至获得镜像服务器IP
-		// 参数 
-		//	InitSendTime:2--Default
-		//		测试使用:更改默认值
-		//		正常使用:使用默认值
+		// 摘要:
+		//		给主服务器发UDP包直至获得镜像服务器IP
+		// 参数:
+		//		InitSendTime:2--Default
+		//			测试使用:更改默认值
+		//			正常使用:使用默认值
 		public String SendMain(byte InitSendTime=2)
         {
 			int GetMirrorIp = 0;
@@ -303,9 +304,26 @@ namespace Client
 #if DEBUG
 				Console.WriteLine("Init Task to Get Mirror Ip");
 #endif
-				// get MainServer Response
-				// get mirror ip
-				byte[] getip=Client.Receive(ref remote);
+				byte[] getip;
+				Func<byte[], bool> AllZero = (byte[] array) => {
+					foreach (byte b in array)
+					{
+						if (b != 0) return false;
+					} return true;
+				};
+				do
+				{
+					// get MainServer Response
+					// get mirror ip
+					getip = Client.Receive(ref remote);
+					if (AllZero(getip)) { 
+						Thread.Sleep(
+							ClientTool.SendGapTime 
+							* 
+							ClientTool.NoMirrorConnectSleepFactor);
+					}
+					else break;
+				} while (true);
 				MirrorIP = String.Join(".", getip); // It's OK
 				System.Threading.Interlocked.Increment(ref GetMirrorIp);
 			});
