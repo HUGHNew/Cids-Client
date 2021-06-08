@@ -16,6 +16,25 @@ using System.Collections.Generic;
 
 namespace Client
 {
+	public class Charset { 
+		public static String UTF8(byte[] bytes)
+        {
+			return System.Text.Encoding.UTF8.GetString(bytes);
+        }
+		public static byte[] UTF8(String str)
+        {
+			return System.Text.Encoding.UTF8.GetBytes(str);
+		}
+		public static String ASCII(byte[] bytes)
+		{
+			return System.Text.Encoding.ASCII.GetString(bytes);
+		}
+		public static byte[] ASCII(String str)
+		{
+			return System.Text.Encoding.ASCII.GetBytes(str);
+		}
+	}
+
 	public class ClientTool
     {
 		public const int ToMainRequestLength = 8;
@@ -189,7 +208,7 @@ namespace Client
 		private MirrorProtocol Protocol;
 
 		private TcpClient TcpMirror=null;
-		private readonly System.Text.StringBuilder Last;
+		private readonly System.Text.StringBuilder Last=new System.Text.StringBuilder();
 		private int bracket=0;
 		#endregion
 #if DEBUG
@@ -407,9 +426,14 @@ namespace Client
 			MirrorIP = ip;
             if (Protocol == MirrorProtocol.Tcp)
             {
-				TcpMirror.Close();
+				if(TcpMirror!=null)TcpMirror.Close();
 				TcpMirror = new TcpClient(MirrorIP, 20801);
 			}
+			return this;
+        }
+		public CidsClient SetProtocol(MirrorProtocol mp)
+        {
+			Protocol = mp;
 			return this;
         }
 #endif
@@ -614,9 +638,15 @@ namespace Client
 			int ch_int;
 			char ch;
 			// Get Json
-			while (true)
+			while (true) // get a whole json or half if stream ends
 			{
-				ch_int = tcpStream.ReadByte();
+				try { 
+					ch_int = tcpStream.ReadByte();
+                }
+                catch (IOException)
+                {
+					break;
+                }
 				if (ch_int == -1)    //流结束
 					break;
 				else
@@ -667,15 +697,27 @@ namespace Client
 			tcpStream.Write(JsonBytes,0,JsonBytes.Length);
 
 			String Json=TcpRecvJson(tcpStream);
+            if (MustGet)
+            {
+				while (null == Json) {
+					Json = TcpRecvJson(tcpStream);
+				}
+#if DEBUG
+				Console.WriteLine("Must Get A Json:{0}",Json);
+#endif
+            }
             if (Json != null) // Get A Json
             {
-				try { 
+				try {
 					RecvJson = Newtonsoft.Json.JsonConvert.DeserializeObject<Json.MirrorReceive>(Json);
                 }
                 catch (Exception)
                 {
+#if DEBUG
+					Console.WriteLine("Exception Capture");
+#endif
 					RecvJson = null;
-                }
+				}
             }
 
 			return RecvJson;

@@ -16,6 +16,7 @@ namespace Client.Test
             System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory), "Temp"),
             "img");
         public const string localhost="127.0.0.1";
+
         public static void TcpTimeOutTest()
         {
             const int port = 20000;
@@ -219,6 +220,59 @@ namespace Client.Test
                 data = null;
             }
 #endif
+        }
+    }
+    class TcpTest
+    {
+        public const int port = 20801;
+        public const string localhost = "127.0.0.1";
+        public static void TcpMSvr()
+        {
+            TcpListener listener = new TcpListener(IPAddress.Parse(localhost),port);
+            listener.Start();
+            TcpClient tcp = listener.AcceptTcpClient();
+            String halfJson = "{\"needUpdate\":false";
+            byte[] bhj = Charset.UTF8(halfJson);
+            tcp.GetStream().Write(bhj,0,bhj.Length);
+            Task.Factory.StartNew(
+                () =>
+                {
+                    Thread.Sleep(3000);
+                }
+            ).Wait();
+            string end = "}";
+            byte[] be = Charset.UTF8(end);
+            tcp.GetStream().WriteByte(be[0]);
+            Thread.Sleep(3000);
+            tcp.Close();
+        }
+        public static void TcpClt()
+        {
+            Task.Factory.StartNew(
+                () => {
+                    TcpMSvr();
+                }
+            );
+            CidsClient client = new CidsClient("1231231", localhost);
+            client.SetProtocol(CidsClient.MirrorProtocol.Tcp)
+                .SetMirrorIp(localhost);
+            Thread.Sleep(500);
+            var json=client.SendFirstMirror();
+            Console.WriteLine(json.NeedUpdate);
+        }
+        public static void TcpHb()
+        {
+            Task.Factory.StartNew(
+                () => {
+                    TcpMSvr();
+                }
+            );
+            CidsClient client = new CidsClient("1231231", localhost);
+            client.SetProtocol(CidsClient.MirrorProtocol.Tcp)
+                .SetMirrorIp(localhost);
+            Json.MirrorReceive jr=null;
+            client.HeartBeat(ref jr);
+            Console.WriteLine(jr == null);
         }
     }
 }
