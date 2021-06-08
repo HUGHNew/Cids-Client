@@ -44,12 +44,17 @@ namespace Client
 		//	返回一个 指定间隔 的随机睡眠时间
 		//	min - max
 #if DEBUG
-		public static int SendGapTime => NextInt % (ConfData.SleepMin==0?2000: ConfData.SleepMin) 
-			+ (ConfData.SleepMax == 0 ? 3000 : ConfData.SleepMax);
+		public static int SendGapTime => NextInt % (ConfData.SleepMin==0?1000: ConfData.SleepMin) 
+			+ (ConfData.SleepMax == 0 ? 500 : ConfData.SleepMax);
 #else
 		public static int SendGapTime => NextInt % ConfData.SleepMin + ConfData.SleepMax;
 #endif
-		public const int NoMirrorConnectSleepFactor = 100;
+		public const int NoMirrorConnectSleepFactor =
+#if DEBUG
+			2;
+#else
+			100;
+#endif
 		#region Update And Set Wallpaper All the useful function
 		const int SPI_SETDESKWALLPAPER = 20;
 		const int SPIF_UPDATEINIFILE = 0x01;
@@ -242,7 +247,8 @@ namespace Client
         {
 			CidsClientInit(server == null ? ConfData.DefaultMServer : IPAddress.Parse(server));
 		}
-#endregion
+		#endregion
+		public int Available => Client.Available;
 		public void DownLoadFail()
         {
 			lastTime = null;
@@ -261,7 +267,15 @@ namespace Client
 				System.Threading.Thread.Sleep(ConfData.SendDelayTime);
             }
         }
-        #region Main Communications
+        private static void SleepForMirrorConnection()
+        {
+			Thread.Sleep(
+				ClientTool.SendGapTime
+				*
+				ClientTool.NoMirrorConnectSleepFactor
+			);
+		}
+		#region Main Communications
         // 摘要
         //	重发数据报给 MainServer 并告知服务器重发原因
         // 返回
@@ -315,12 +329,17 @@ namespace Client
 				{
 					// get MainServer Response
 					// get mirror ip
-					getip = Client.Receive(ref remote);
-					if (AllZero(getip)) { 
-						Thread.Sleep(
-							ClientTool.SendGapTime 
-							* 
-							ClientTool.NoMirrorConnectSleepFactor);
+					do
+					{
+						getip = Client.Receive(ref remote);
+#if DEBUG
+					Console.WriteLine($"Recv:{getip[0]}.{getip[1]}.{getip[2]}.{getip[3]}");
+					Console.WriteLine("Available Size:{0}",Client.Available);
+#endif
+					} while (AllZero(getip)&&Client.Available > 0);
+					if (AllZero(getip)) {
+						Interlocked.CompareExchange(ref GetMirrorIp, 2, 0);
+						SleepForMirrorConnection();
 					}
 					else break;
 				} while (true);
@@ -345,7 +364,16 @@ namespace Client
 				{
 					++SendTime;
 				}
-			} while (System.Threading.Interlocked.Equals(GetMirrorIp,0));
+#if DEBUG
+#endif
+				while (Equals(Interlocked.CompareExchange(ref GetMirrorIp,0,2),2)) { // Ip All Zero
+					// Sleep For A Short Time for Mirrors Connections
+#if DEBUG
+					Console.WriteLine("Sleep Time");
+#endif
+					SleepForMirrorConnection();
+				}
+			} while (Interlocked.Equals(GetMirrorIp,0));
 #if Connect
 			int port;
 #if DEBUG
@@ -474,7 +502,6 @@ namespace Client
         }
 		#endregion
 		#region Udp Protocol Mirror
-		//
 		// 摘要:
 		//		给镜像服务器发送UDP包直至获取镜像服务器JSON
 		//		发送 ASCII 字节流 收取 UTF8 字节流

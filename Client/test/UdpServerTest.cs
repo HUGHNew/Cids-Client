@@ -39,6 +39,21 @@ namespace Client.Test
             Console.WriteLine($"got:{got}");
             Thread.Sleep(2000);
         }
+        public static void MainZeroTest()
+        {
+            CidsClient client = new CidsClient(uuid, localhost);
+            Task.Factory.StartNew(() =>
+            {
+                byte[] zero = { 0,0,0,0 };
+                byte[] local = { 127, 0, 0, 1 };
+                UdpServer.MainServer(zero);
+                Thread.Sleep(1000);
+                UdpServer.MainServer(local);
+            });
+            client.SendMain();
+            Thread.Sleep(1000);
+            Console.WriteLine(client.Available);
+        }
         [Obsolete]
         public static void Server()
         {
@@ -109,10 +124,10 @@ namespace Client.Test
         public const string mainlogfile = "../../test/main.log";
         public const string mirrorlogfile = "../../test/mirror.log";
         public const string localhost = "127.0.0.1";
-        private static readonly StreamWriter mainlog= new StreamWriter(mainlogfile) {
+        public static readonly StreamWriter mainlog= new StreamWriter(mainlogfile) {
             AutoFlush = true
         };
-        private static readonly StreamWriter mirrorlog = new StreamWriter(mirrorlogfile)
+        public static readonly StreamWriter mirrorlog = new StreamWriter(mirrorlogfile)
         {
             AutoFlush = true
         };
@@ -135,12 +150,13 @@ namespace Client.Test
             //Mirror();
             //HB();
         }
-        public static void MainServer() {
+        public static void MainServer(byte[] loop)
+        {
             StreamWriter stream = mainlog;
             UdpClient udp = main;
             udp.Receive(ref end); // request from client for mirror
             stream.WriteLine(end.Port);
-            byte[] loop = { 127, 0, 0, 1 };
+            
             stream.WriteLine("Main Starts");
 #if DEBUG
             
@@ -153,6 +169,10 @@ namespace Client.Test
             stream.WriteLine("Main Ends");
             //System.Threading.Thread.Sleep(1000);
             //udp.Close();
+        }
+        public static void MainServer() {
+            byte[] loop = { 127, 0, 0, 1 };
+            MainServer(loop);
         }
         public static void MirrorServer()
         {
