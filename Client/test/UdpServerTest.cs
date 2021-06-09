@@ -86,15 +86,24 @@ namespace Client.Test
                 {
                     Console.WriteLine("url:" + json.Image_url);
                     Console.WriteLine("当前课程"+json.Event.GetReadable().CourseTitle);
+                    if(json.Image_url!=null|| json.Image_url != "")
+                    {
+                        DLoadTest(json.Image_url);
+                    }
                 }
+                Thread.Sleep(1000);
                 //json = null;
             }
             Console.WriteLine("Beat Time Out");
         }
+        public static bool DLoadTest(String path)
+        {
+            Console.WriteLine("Path:" + Tmp);
+            return ClientTool.DownloadAbsFile(path, Tmp + "\\tmp.jpg");
+        }
         public static bool DLoadTest()
         {
-            Console.WriteLine("Path:"+Tmp);
-            return ClientTool.DownloadAbsFile("http://192.168.233.13:20803/home/server/scu-cids/images/1.jpg", Tmp+"\\tmp.jpg");
+            return DLoadTest("http://192.168.233.13:20803/images/1.jpg");
         }
     }
     class UdpServer
