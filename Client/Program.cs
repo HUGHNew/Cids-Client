@@ -18,11 +18,11 @@ namespace Client
             //tmptest();
             //RegisrtyTest();
             //NetTest();
-            //Test.UdpTest.ClientCenterOnly();
             //Test.UdpTest.TcpTimeOutTest();
-            //Test.UdpTest.ClientRealTest();
+            //Test.UdpTest.ClientCenterOnly();
             //Test.UdpTest.ClientMirrorOnly();
-            Test.UdpTest.DLoadTest();
+            Test.UdpTest.ClientRealTest();
+            //Test.UdpTest.DLoadTest();
             //Test.TcpTest.TcpClt();
             //Test.TcpTest.TcpHb();
             //halfpack();

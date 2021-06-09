@@ -479,11 +479,7 @@ namespace Client
 			int bracketBeforeSend = bracket;
 			Json.MirrorReceive receive = SendMirror(ConfData.HeartBeatGap,false);
 #if DEBUG
-			Console.WriteLine(receive == null);
-            if (receive != null)
-            {
-				Console.WriteLine("get recv url:{0}",receive.Image_url);
-            }
+			Console.WriteLine("receive empty:{0}",receive == null);
 			Console.WriteLine("HB End");
 #endif
 			if (null == receive) // not recv
@@ -494,9 +490,9 @@ namespace Client
 				}
 				else return 1;
             }
+			data = receive;
             if (receive.NeedUpdate)
             {
-				data = receive;
 				return 2;
             }
 			return 1;

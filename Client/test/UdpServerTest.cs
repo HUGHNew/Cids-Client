@@ -43,7 +43,7 @@ namespace Client.Test
         public const string testMirror = "192.168.233.13";
         public static void ClientCenterOnly()
         {
-            CidsClient client = new CidsClient(uuid, testMirror);
+            CidsClient client = new CidsClient(uuid, testCenter);
             string ip=client.SendMain();
             Console.WriteLine(ip);
             ip = client.ReSendMain();
@@ -51,7 +51,7 @@ namespace Client.Test
         }
 #if DEBUG
         public static void ClientMirrorOnly() {
-            CidsClient client = new CidsClient(uuid,testCenter);
+            CidsClient client = new CidsClient(uuid,testMirror);
             client.SetMirrorIp(testMirror).SendFirstMirror();
         }
 #endif
@@ -87,13 +87,14 @@ namespace Client.Test
                     Console.WriteLine("url:" + json.Image_url);
                     Console.WriteLine("当前课程"+json.Event.GetReadable().CourseTitle);
                 }
+                //json = null;
             }
             Console.WriteLine("Beat Time Out");
         }
         public static bool DLoadTest()
         {
             Console.WriteLine("Path:"+Tmp);
-            return ClientTool.DownloadAbsFile("http://192.168.233.13:20803/images/1.jpg", Tmp+"\\tmp.jpg");
+            return ClientTool.DownloadAbsFile("http://192.168.233.13:20803/home/server/scu-cids/images/1.jpg", Tmp+"\\tmp.jpg");
         }
     }
     class UdpServer
