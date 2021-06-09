@@ -20,7 +20,9 @@ namespace Client
             //NetTest();
             //Test.UdpTest.ClientCenterOnly();
             //Test.UdpTest.TcpTimeOutTest();
-            Test.UdpTest.ClientRealTest();
+            //Test.UdpTest.ClientRealTest();
+            //Test.UdpTest.ClientMirrorOnly();
+            Test.UdpTest.DLoadTest();
             //Test.TcpTest.TcpClt();
             //Test.TcpTest.TcpHb();
             //halfpack();

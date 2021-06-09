@@ -57,7 +57,8 @@ namespace Client
 		}
 		public static String ComposeMirrorRequest(String id,String Last) {
 			String time=Last ?? "null";
-			return $"{{\"UUID\":\"{id}\",\"time\":{time}}}";
+			Json.MirrorRequest request = new Json.MirrorRequest(id, Last ?? "null");
+			return Newtonsoft.Json.JsonConvert.SerializeObject(request);
 		}
 		// 摘要
 		//	返回一个 指定间隔 的随机睡眠时间
@@ -166,15 +167,21 @@ namespace Client
 			File.Move(tmp, filename);
 			return true;
 		}
-		public static bool TryDownload(ref CidsClient UdpClient, ref Json.MirrorReceive data, int time_out, int interval, int limit = 30)
+		/**
+		 * @brief Send First and attempt to download image
+		 */
+		public static bool TryDownload(ref CidsClient UdpClient, ref Json.MirrorReceive data, int time_out, int interval, bool first=false ,int limit = 30)
 		{
 			// get wallpaper file
 			// An Absolute One
 			string wallpaperPath = Data.ConfData.SaveAbsPathFile;
-
-			// get json
-			data = UdpClient.SendFirstMirror();
+            if (first)
+            {
+				// get json
+				data = UdpClient.SendFirstMirror();
+            }
 			String ImgUrl = data.Image_url;
+			if (ImgUrl == null || ImgUrl == "") return false;
 #region Download File
 			// Set Attempt Limit
 			var tokenSource = new CancellationTokenSource();
@@ -252,7 +259,11 @@ namespace Client
 		private void CidsClientInit(IPAddress server)
 		{
 			MainServer = server;
+#if DEBUG
+			Protocol = MirrorProtocol.Tcp;
+#else
 			Protocol = (MirrorProtocol)(ConfData.MirrorProtocol);
+#endif
 #if Connect
 			Client.Connect(MainServer, ConfData.MainPort);
 #endif
@@ -266,7 +277,7 @@ namespace Client
         {
 			CidsClientInit(server == null ? ConfData.DefaultMServer : IPAddress.Parse(server));
 		}
-		#endregion
+#endregion
 		public int Available => Client.Available;
 		public void DownLoadFail()
         {
@@ -294,7 +305,7 @@ namespace Client
 				ClientTool.NoMirrorConnectSleepFactor
 			);
 		}
-		#region Main Communications
+#region Main Communications
         // 摘要
         //	重发数据报给 MainServer 并告知服务器重发原因
         // 返回
@@ -410,16 +421,16 @@ namespace Client
 				case MirrorProtocol.Quic:
 					break;
 				case MirrorProtocol.Tcp:
-		#if DEBUG
+#if DEBUG
 					TcpMirror = new TcpClient(MirrorIP, 20801);
-		#else
+#else
 					TcpMirror = new TcpClient(MirrorIP, ConfData.MirrorPort);
-		#endif// Debug
+#endif// Debug
 					break;
 			}
 			return MirrorIP;
 		}
-        #endregion//Main Com
+#endregion//Main Com
 #if DEBUG
         public CidsClient SetMirrorIp(String ip)
         {
@@ -437,7 +448,7 @@ namespace Client
 			return this;
         }
 #endif
-		#region Mirror Communication
+#region Mirror Communication
 		private Json.MirrorReceive SendMirror(int SleepTimeMilli, bool MustGet = true)
         {
 			switch (Protocol) {
@@ -462,9 +473,20 @@ namespace Client
 		//		2 -- 更新
 		public int HeartBeat(ref Json.MirrorReceive data)
         {
+#if DEBUG
+			Console.WriteLine("HB Start");
+#endif
 			int bracketBeforeSend = bracket;
 			Json.MirrorReceive receive = SendMirror(ConfData.HeartBeatGap,false);
-            if (null == receive) // not recv
+#if DEBUG
+			Console.WriteLine(receive == null);
+            if (receive != null)
+            {
+				Console.WriteLine("get recv url:{0}",receive.Image_url);
+            }
+			Console.WriteLine("HB End");
+#endif
+			if (null == receive) // not recv
             {
 				if (bracketBeforeSend == bracket)
 				{
@@ -524,8 +546,8 @@ namespace Client
 				client.ReSendMain(); // Get A New Mirror In Case The Old One is Down
             }
         }
-		#endregion
-		#region Udp Protocol Mirror
+#endregion
+#region Udp Protocol Mirror
 		// 摘要:
 		//		给镜像服务器发送UDP包直至获取镜像服务器JSON
 		//		发送 ASCII 字节流 收取 UTF8 字节流
@@ -585,9 +607,9 @@ namespace Client
 			}
 #endregion// end of task
             );
-			#endregion// Recv Task
+#endregion// Recv Task
 
-			#endregion// end of a timer need
+#endregion// end of a timer need
 
 #if DEBUG
 			string id = id_test ?? ConfData.UuId;
@@ -625,8 +647,8 @@ namespace Client
             }
             return RecvJson;
 		}
-		#endregion// Udp to Mirror
-		#region Tcp Protocol Mirror
+#endregion// Udp to Mirror
+#region Tcp Protocol Mirror
 		public String TcpRecvJson(ref TcpClient tcp)
         {
 			return TcpRecvJson(tcp.GetStream());
@@ -695,8 +717,11 @@ namespace Client
 			byte[] JsonBytes = System.Text.Encoding.ASCII.GetBytes(StoMirror);
 
 			tcpStream.Write(JsonBytes,0,JsonBytes.Length);
+#if DEBUG
+			Console.WriteLine("Tcp Msg Write");
+#endif
 
-			String Json=TcpRecvJson(tcpStream);
+			String Json =TcpRecvJson(tcpStream);
             if (MustGet)
             {
 				while (null == Json) {
@@ -722,6 +747,6 @@ namespace Client
 
 			return RecvJson;
 		}
-		#endregion
+#endregion
 	}
 }

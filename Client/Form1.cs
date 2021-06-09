@@ -46,7 +46,7 @@ namespace Client
             UdpClient.SendMain();
             data = null;
             ClientTool.TryDownload(ref UdpClient,ref data, 
-                ClientTool.time_out, ClientTool.interval);
+                ClientTool.time_out, ClientTool.interval,true);
             ClientTool.Update(ref data);
             Client.Message.Show.MessageShow(data.Message);
             CidsClient.ClientBeat(UdpClient,ref data);

@@ -38,7 +38,7 @@ namespace Client.Test
             UdpServer server = new UdpServer();
             server.ServerOn();
         }
-        public const string uuid = "1231230";
+        public const string uuid = "00000522";
         public const string testCenter = "192.168.233.14";
         public const string testMirror = "192.168.233.13";
         public static void ClientCenterOnly()
@@ -50,7 +50,7 @@ namespace Client.Test
             Console.WriteLine(ip);
         }
 #if DEBUG
-        public static void ClienMirrorOnly() {
+        public static void ClientMirrorOnly() {
             CidsClient client = new CidsClient(uuid,testCenter);
             client.SetMirrorIp(testMirror).SendFirstMirror();
         }
@@ -70,11 +70,15 @@ namespace Client.Test
         public static void ClientRealTest()
         {
             string center = "192.168.233.14";
-            CidsClient client = new CidsClient("1231230", center);
+            CidsClient client = new CidsClient(uuid, center);
             Console.WriteLine("Mirror Ip:"+client.SendMain());
             var json = client.SendFirstMirror();
             //CidsClient.UdpClientBeat(client,ref json);
+            Console.WriteLine("First Mirror Msg:");
+            Console.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(json));
+            Console.WriteLine("Msg Ends");
             int beats = 0;
+            Console.WriteLine("Beat Goes");
             while (client.HeartBeat(ref json)>0)
             {
                 Console.WriteLine(beats++ + " Times HeatBeat");
@@ -89,7 +93,7 @@ namespace Client.Test
         public static bool DLoadTest()
         {
             Console.WriteLine("Path:"+Tmp);
-            return ClientTool.DownloadAbsFile("http://192.168.233.14:80/3.jpg", Tmp+"\\tmp.jpg");
+            return ClientTool.DownloadAbsFile("http://192.168.233.13:20803/images/1.jpg", Tmp+"\\tmp.jpg");
         }
     }
     class UdpServer
