@@ -379,9 +379,9 @@ namespace Client
             // SendTimes(Gram,ClientTool.ToMainRequestLength, remote);
 
 			do{ // send until receive
-#if DEBUG
-				Console.WriteLine($"\nSend for Mirror IP {SendTime} times");
-#endif
+//#if DEBUG
+//				Console.WriteLine($"\nSend for Mirror IP {SendTime} times");
+//#endif
 				// Gram[7] equals 0
 #if Connect
 				SendTimes(Gram, ClientTool.ToMainRequestLength); // The first send
@@ -473,15 +473,15 @@ namespace Client
 		//		2 -- 更新
 		public int HeartBeat(ref Json.MirrorReceive data)
         {
-#if DEBUG
-			Console.WriteLine("HB Start");
-#endif
+//#if DEBUG
+//			Console.WriteLine("HB Start");
+//#endif
 			int bracketBeforeSend = bracket;
 			Json.MirrorReceive receive = SendMirror(ConfData.HeartBeatGap,false);
-#if DEBUG
-			Console.WriteLine("receive empty:{0}",receive == null);
-			Console.WriteLine("HB End");
-#endif
+//#if DEBUG
+//			Console.WriteLine("receive empty:{0}",receive == null);
+//			Console.WriteLine("HB End");
+//#endif
 			if (null == receive) // not recv
             {
 				if (bracketBeforeSend == bracket)
@@ -713,9 +713,9 @@ namespace Client
 			byte[] JsonBytes = System.Text.Encoding.ASCII.GetBytes(StoMirror);
 
 			tcpStream.Write(JsonBytes,0,JsonBytes.Length);
-#if DEBUG
-			Console.WriteLine("Tcp Msg Write");
-#endif
+//#if DEBUG
+//			Console.WriteLine("Tcp Msg Write");
+//#endif
 
 			String Json =TcpRecvJson(tcpStream);
             if (MustGet)

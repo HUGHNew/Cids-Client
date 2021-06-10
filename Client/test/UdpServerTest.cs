@@ -79,21 +79,24 @@ namespace Client.Test
             Console.WriteLine("Msg Ends");
             int beats = 0;
             Console.WriteLine("Beat Goes");
-            while (client.HeartBeat(ref json)>0)
+            do
             {
-                Console.WriteLine(beats++ + " Times HeatBeat");
+                //Console.WriteLine(beats++ + " Times HeatBeat");
                 if (json.NeedUpdate)
                 {
-                    Console.WriteLine("url:" + json.Image_url);
-                    Console.WriteLine("当前课程"+json.Event.GetReadable().CourseTitle);
-                    if(json.Image_url!=null|| json.Image_url != "")
+                    //Console.WriteLine("url:" + json.Image_url);
+                    //Console.WriteLine("当前课程"+json.Event.GetReadable().CourseTitle);
+                    if(json.Image_url!=null&& json.Image_url != "")
                     {
                         DLoadTest(json.Image_url);
+                        Console.WriteLine("DL new image");
                     }
+                    Console.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(json));
+                    Message.Show.MessageShow(json.Message);
                 }
                 Thread.Sleep(1000);
                 //json = null;
-            }
+            } while (client.HeartBeat(ref json) > 0);
             Console.WriteLine("Beat Time Out");
         }
         public static bool DLoadTest(String path)
