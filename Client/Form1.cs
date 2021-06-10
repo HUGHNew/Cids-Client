@@ -44,9 +44,16 @@ namespace Client
             BackgroundWorker bgWorker = sender as BackgroundWorker;
             UdpClient = new CidsClient();
             UdpClient.SendMain();
-            data = null;
-            ClientTool.TryDownload(ref UdpClient,ref data, 
-                ClientTool.time_out, ClientTool.interval,true);
+            bool resend = false;
+            do {
+                data = null;
+                try {
+                    ClientTool.TryDownload(ref UdpClient, ref data,
+                        ClientTool.time_out, ClientTool.interval, true);
+                    resend = false;
+                }
+                catch (IOException) { UdpClient.ReSendMain();resend = true; }
+            } while (resend);
             ClientTool.Update(ref data);
             Client.Message.Show.MessageShow(data.Message);
             CidsClient.ClientBeat(UdpClient,ref data);

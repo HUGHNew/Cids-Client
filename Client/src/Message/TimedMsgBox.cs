@@ -13,7 +13,7 @@ namespace Client.Message{
             Task task = Task.Factory.StartNew(() => {
                 MessageBox.Show(msg, title, MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }, token);
-            token.Register(()=> {});
+            //token.Register(()=> {});
             //CancellationToken cancellation = new CancellationToken(true);
 
             task.Wait(showTimeSeconds * Unit);

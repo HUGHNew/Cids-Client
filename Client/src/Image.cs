@@ -18,13 +18,24 @@ namespace Client.Image
         //  将 UseZero 取反 然后返回当前值
         private static bool Toggel()
         {
-            UseZero = !UseZero;
-            return UseZero;
+            return UseZero = !UseZero;
         }
         #endregion
         public static string GetDestFile()
         {
-            return DstFiles[Toggel() ? 1 : 0];
+#if DEBUG
+            Console.WriteLine("Get Next File: "+ToSetWallFile());
+#else
+#endif
+            //if (UseZero)
+            //{
+            //    UseZero = false;
+            //    return DstFiles[1];
+            //}
+            //else { UseZero = true;
+            //    return DstFiles[0];
+            //}
+            return DstFiles[Toggel() ? 0 : 1];
         }
         public static string ToSetWallFile()
         {

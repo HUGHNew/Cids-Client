@@ -38,7 +38,7 @@ namespace Client.Test
             UdpServer server = new UdpServer();
             server.ServerOn();
         }
-        public const string uuid = "00000522";
+        public const string uuid = "0000475";
         public const string testCenter = "192.168.233.14";
         public const string testMirror = "192.168.233.13";
         public static void ClientCenterOnly()
@@ -79,6 +79,8 @@ namespace Client.Test
             Console.WriteLine("Msg Ends");
             int beats = 0;
             Console.WriteLine("Beat Goes");
+            ClientTool.SetWallpaper();
+            CidsClient.ClientBeat(client,ref json);
             do
             {
                 //Console.WriteLine(beats++ + " Times HeatBeat");
@@ -94,7 +96,7 @@ namespace Client.Test
                     Console.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(json));
                     Message.Show.MessageShow(json.Message);
                 }
-                Thread.Sleep(1000);
+                //Thread.Sleep(1000);
                 //json = null;
             } while (client.HeartBeat(ref json) > 0);
             Console.WriteLine("Beat Time Out");

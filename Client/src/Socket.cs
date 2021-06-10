@@ -13,6 +13,7 @@ using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using System.Threading;
 using System.Collections.Generic;
+using Windows.Media.Protection.PlayReady;
 
 namespace Client
 {
@@ -89,7 +90,12 @@ namespace Client
 		}
 		public static void SetWallpaper(Style style=Style.Stretched)
 		{
+#if DEBUG
+			string fileName = Path.Combine(@"C:\Windows\Temp\Cids\image", Image.ImageConf.ToSetWallFile());
+			Console.WriteLine("Current Wallpaper : "+ImageConf.ToSetWallFile());
+#else
 			string fileName = Path.Combine(ConfData.CidsImagePath, Image.ImageConf.ToSetWallFile());
+#endif
 			ClientTool.SetWallpaper(fileName, style);
 		}
 		public static void SetWallpaper(string strSavePath, Style style)
@@ -182,7 +188,10 @@ namespace Client
             }
 			String ImgUrl = data.Image_url;
 			if (ImgUrl == null || ImgUrl == "") return false;
-#region Download File
+			#region Download File
+#if DEBUG
+			Console.WriteLine("Start to Download");
+#endif
 			// Set Attempt Limit
 			var tokenSource = new CancellationTokenSource();
 			CancellationToken token = tokenSource.Token;
@@ -191,8 +200,15 @@ namespace Client
 			{
 				UdpClient.DownLoadFail();
 				Thread.Sleep(interval);
+#if DEBUG
+				Console.WriteLine("Time Out");
+#endif
+				return false;
 			}
-#endregion//download
+#if DEBUG
+			Console.WriteLine("Download Ends");
+#endif
+			#endregion//download
 			return true;
 		}
 		public static bool Update(ref Json.MirrorReceive data)
@@ -305,13 +321,30 @@ namespace Client
 				ClientTool.NoMirrorConnectSleepFactor
 			);
 		}
-#region Main Communications
-        // 摘要
-        //	重发数据报给 MainServer 并告知服务器重发原因
-        // 返回
-        //	Mirror IP
-        public String ReSendMain()
+		public static void ClientUpdate(CidsClient client, ref Json.MirrorReceive data)
         {
+			// update information
+			if (data.Image_url != "")
+			{
+				ClientTool.TryDownload(ref client, ref data,
+					ClientTool.time_out, ClientTool.interval);
+				ClientTool.Update(ref data);
+				//ClientTool.SetWallpaper();
+			}
+			Message.Show.MessageShow(data.Message);
+#if DEBUG
+			Console.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(data));
+#endif
+		}
+		#region Main Communications
+		// 摘要
+		//	重发数据报给 MainServer 并告知服务器重发原因
+		// 返回
+		//	Mirror IP
+		public String ReSendMain()
+        {
+			bracket = 0;
+			Last.Clear();
 			return SendMain(1);
         }
 		// 摘要:
@@ -451,15 +484,18 @@ namespace Client
 #region Mirror Communication
 		private Json.MirrorReceive SendMirror(int SleepTimeMilli, bool MustGet = true)
         {
+			Json.MirrorReceive result = null;
 			switch (Protocol) {
 				case MirrorProtocol.Udp:
-					return UdpSendMirror(SleepTimeMilli,MustGet);
+					result= UdpSendMirror(SleepTimeMilli,MustGet);break;
 				case MirrorProtocol.Tcp:
-					return TcpSendMirror(SleepTimeMilli,MustGet);
+					result = TcpSendMirror(SleepTimeMilli,MustGet);break;
 				case MirrorProtocol.Quic:
 				default:
 					return null;
 			}
+			if(result!=null)ClientUpdate(this,ref result);
+			return result;
         }
 		public Json.MirrorReceive SendFirstMirror() {
 			return SendMirror(ClientTool.SendGapTime); // sleep 3-5 seconds each gap
@@ -473,15 +509,22 @@ namespace Client
 		//		2 -- 更新
 		public int HeartBeat(ref Json.MirrorReceive data)
         {
-//#if DEBUG
-//			Console.WriteLine("HB Start");
-//#endif
+			//#if DEBUG
+			//			Console.WriteLine("HB Start");
+			//#endif
+			var begin = DateTime.Now;
 			int bracketBeforeSend = bracket;
+#if DEBUG
+			Json.MirrorReceive receive = SendMirror(1000, false);
+#else
 			Json.MirrorReceive receive = SendMirror(ConfData.HeartBeatGap,false);
-//#if DEBUG
-//			Console.WriteLine("receive empty:{0}",receive == null);
-//			Console.WriteLine("HB End");
-//#endif
+#endif
+			//#if DEBUG
+			//			Console.WriteLine("receive empty:{0}",receive == null);
+			//			Console.WriteLine("HB End");
+			//#endif
+			
+			Thread.Sleep(DateTime.Now-begin);
 			if (null == receive) // not recv
             {
 				if (bracketBeforeSend == bracket)
@@ -528,17 +571,13 @@ namespace Client
         {
             while (true)
             {
-				while (client.LimitedHeartBeat(ref data))
-				{
-					// update information
-					if (data.Image_url != "")
+				try { 
+					while (client.LimitedHeartBeat(ref data))
 					{
-						ClientTool.TryDownload(ref client,ref data,
-							ClientTool.time_out, ClientTool.interval);
-						ClientTool.SetWallpaper();
+
 					}
-					ClientTool.Update(ref data);
 				}
+                catch (IOException) { } // Tcp Disconnect
 				client.ReSendMain(); // Get A New Mirror In Case The Old One is Down
             }
         }
