@@ -5,6 +5,15 @@ namespace Client.Test
 {
     class ShowTest
     {
+        public static void SingleShow()
+        {
+            Message.Show.MessageShow(
+                new List<Json.ReceiveComponent.MessageData>
+                {
+                    new Json.ReceiveComponent.MessageData("消息演示","消息内容展示\n展示",5)
+                }
+                );
+        }
         public static void SeriesShow()
         {
             Message.Show.MessageShow(

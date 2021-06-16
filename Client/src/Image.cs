@@ -180,14 +180,20 @@ namespace Client.Image
         {
             Point strPoint;
             SolidBrush brush = new SolidBrush(c.titleClr);
-            strPoint = new Point(rec.X + leftPadding, rec.Y + Convert.ToInt32(rec.Height / cols) * 1);
-            g.DrawString(c.titleStr, headFont, brush, strPoint);// CourseTitle--写课程标题
+            //int Xval = rec.X + leftPadding;
+            int Xval = rec.X + rec.Width;
+            strPoint = new Point(Xval, rec.Y + Convert.ToInt32(rec.Height / cols) * 1); // need to change
+            StringFormat format = new StringFormat
+            {
+                Alignment = StringAlignment.Far
+            };
+            g.DrawString(c.titleStr, headFont, brush, strPoint,format);// CourseTitle--写课程标题
             brush.Color = c.idClr;
-            strPoint = new Point(rec.X + leftPadding, rec.Y + Convert.ToInt32(rec.Height / cols) * text1);
-            g.DrawString(c.idStr, textFont, brush, strPoint); // CourseID--写课程号
+            strPoint = new Point(Xval, rec.Y + Convert.ToInt32(rec.Height / cols) * text1);
+            g.DrawString(c.idStr, textFont, brush, strPoint,format); // CourseID--写课程号
             brush.Color = c.teacherClr;
-            strPoint = new Point(rec.X + leftPadding, rec.Y + Convert.ToInt32(rec.Height / cols) * text2);
-            g.DrawString(c.teacherStr, textFont, brush, strPoint);// Teacher--写老c
+            strPoint = new Point(Xval, rec.Y + Convert.ToInt32(rec.Height / cols) * text2);
+            g.DrawString(c.teacherStr, textFont, brush, strPoint, format);// Teacher--写老c
         }
         // 画出矩形框 然后修改矩形框的布局
         private void DrawRectangle(ref Graphics graphics,Cource c,ref Rectangle rec,Pen pen,int thick) {
