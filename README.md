@@ -25,6 +25,7 @@
   - [x] 先保存当前壁纸到raw.bmp
   - [x] 下载不了的话 先暂停下载任务 time 为 "null"
 - [ ] 测试
+  - [ ] NPE of Receive Data`json`
   - [x] Toast
   - [x] Json
     - [x] Conf:Logo Err
