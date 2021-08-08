@@ -23,7 +23,8 @@ namespace Client
             //Test.UdpTest.ClientMirrorOnly();
             //Test.UdpTest.ClientRealTest();
             //Test.ImgTest.ppt();
-            Test.ShowTest.SingleShow();
+            Test.ShowTest.SeriesShow();
+            //Test.ShowTest.SingleShow();
             //Test.UdpTest.DLoadTest();
             //Test.TcpTest.TcpClt();
             //Test.TcpTest.TcpHb();

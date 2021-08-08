@@ -1,16 +1,10 @@
 ﻿using System.ComponentModel;
 using System.IO;
-using System.Net.Security;
-using System.Net;
-using System.Runtime.InteropServices;
-using System.Security.Cryptography.X509Certificates;
-using System.Threading.Tasks;
 using System.Threading;
 using System;
 using System.Windows.Forms;
-using Microsoft.Win32;
 using Client.Data;
-using Client.Image;
+
 namespace Client
 {
     public partial class Form1 : Form
@@ -39,8 +33,10 @@ namespace Client
         }
         private String GetUrl(int choice=0){ return null; }
         private void BGWorkerMain_DoWork(object sender, System.ComponentModel.DoWorkEventArgs e)
-        { 
-            Thread.Sleep(3000);
+        {
+#if RELEASE
+            Thread.Sleep(3000); // Optimise Region
+#endif
             BackgroundWorker bgWorker = sender as BackgroundWorker;
             UdpClient = new CidsClient();
             UdpClient.SendMain();

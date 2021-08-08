@@ -5,6 +5,15 @@ namespace Client.Test
 {
     class ShowTest
     {
+        public static void toastEx()
+        {
+            var msg=Message.ToastGenerator.Build("5s Test");
+            msg.Show(tst =>
+            {
+                tst.ExpirationTime = System.DateTime.Now.AddSeconds(5);
+            });
+            //Message.Show.Sleep(1000);
+        }
         public static void SingleShow()
         {
             Message.Show.MessageShow(
