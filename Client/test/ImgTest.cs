@@ -10,6 +10,16 @@ namespace Client.Test
     class ImgTest
     {
         public const string filepath = "../../test/img/";
+#if DEBUG
+        public static void ImgSwitch() {
+            Console.WriteLine("First Use "+ImageConf.ToSetWallFile());
+            while (true)
+            {
+                System.Threading.Thread.Sleep(2000);
+                Console.WriteLine("Now We Use " + ImageConf.GetDestFile());
+            }
+        }
+#endif
         public static void t0()
         {
             var files=Directory.EnumerateFiles(filepath);

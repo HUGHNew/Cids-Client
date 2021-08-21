@@ -23,7 +23,9 @@ namespace Client
             //Test.UdpTest.ClientMirrorOnly();
             //Test.UdpTest.ClientRealTest();
             //Test.ImgTest.ppt();
-            Test.ShowTest.SeriesShow();
+            //Test.ShowTest.SeriesShow();
+            //Toggel();
+            Test.ImgTest.ImgSwitch();
             //Test.ShowTest.SingleShow();
             //Test.UdpTest.DLoadTest();
             //Test.TcpTest.TcpClt();
@@ -43,6 +45,15 @@ namespace Client
         static void write(string content)
         {
             Console.WriteLine(content);
+        }
+        static void Toggel()
+        {
+            bool boolean = false;
+            write(boolean.ToString());
+            boolean = !boolean;
+            write(boolean.ToString());
+            boolean = !boolean;
+            write(boolean.ToString());
         }
         public static void CS()
         {

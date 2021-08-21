@@ -13,18 +13,15 @@ namespace Client.Image
     {
         #region Const or Readonly and Function for getting a destination file
         private static readonly string[] DstFiles = { "wp0.jpg", "wp1.jpg" };
-        private static bool UseZero = true;
+        private static bool UseZero = true; // Current WallPaper No
         // 摘要
-        //  将 UseZero 取反 然后返回当前值
-        private static bool Toggel()
-        {
-            return UseZero = !UseZero;
-        }
+        //  将 UseZero 取反 然后返回改后值
+        private static bool Toggel() => UseZero = !UseZero;
         #endregion
         public static string GetDestFile()
         {
 #if DEBUG
-            Console.WriteLine("Get Next File: "+ToSetWallFile());
+            Console.WriteLine("Next File To Set: "+ToSetWallFile());
 #else
 #endif
             //if (UseZero)
@@ -37,6 +34,7 @@ namespace Client.Image
             //}
             return DstFiles[Toggel() ? 0 : 1];
         }
+        // 获取现在用的
         public static string ToSetWallFile()
         {
             return DstFiles[UseZero? 0 : 1];
