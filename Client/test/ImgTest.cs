@@ -12,7 +12,7 @@ namespace Client.Test
         public const string filepath = "../../test/img/";
 #if DEBUG
         public static void ImgSwitch() {
-            Console.WriteLine("First Use "+ImageConf.ToSetWallFile());
+            //Console.WriteLine("First Use "+ImageConf.ToSetWallFile());
             while (true)
             {
                 System.Threading.Thread.Sleep(2000);

@@ -61,8 +61,9 @@ namespace Client
                 #region Top i.e. base
                 try
                 {
+                    Debug.WriteLine("Cids Path : "+CidsPath);
                     ConfData.InitData = Newtonsoft.Json.JsonConvert.DeserializeObject<Json.Conf>
-                        (File.ReadAllText(CidsPath));
+                        (File.ReadAllText(Path.Combine(CidsPath,Conf)));
                 }
                 catch (Exception) // can't access or something else
                 {

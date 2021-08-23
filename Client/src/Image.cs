@@ -13,7 +13,7 @@ namespace Client.Image
     {
         #region Const or Readonly and Function for getting a destination file
         private static readonly string[] DstFiles = { "wp0.jpg", "wp1.jpg" };
-        private static bool UseZero = true; // Current WallPaper No
+        private static bool UseZero = false; // Current WallPaper No
         // 摘要
         //  将 UseZero 取反 然后返回改后值
         private static bool Toggel() => UseZero = !UseZero;

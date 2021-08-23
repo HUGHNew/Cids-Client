@@ -13,7 +13,6 @@ using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using System.Threading;
 using System.Collections.Generic;
-using Windows.Media.Protection.PlayReady;
 
 namespace Client
 {
@@ -176,7 +175,9 @@ namespace Client
 		/**
 		 * @brief Send First and attempt to download image
 		 */
-		public static bool TryDownload(ref CidsClient UdpClient, ref Json.MirrorReceive data, int time_out, int interval, bool first=false ,int limit = 30)
+		public static bool TryDownload(
+			ref CidsClient UdpClient, ref Json.MirrorReceive data,
+			int time_out, int interval, bool first=false ,int limit = 30)
 		{
 			// get wallpaper file
 			// An Absolute One
@@ -189,9 +190,9 @@ namespace Client
 			String ImgUrl = data.Image_url;
 			if (ImgUrl == null || ImgUrl == "") return false;
 			#region Download File
-#if DEBUG
-			Console.WriteLine("Start to Download");
-#endif
+
+			Debug.WriteLine("Start to Download");
+
 			// Set Attempt Limit
 			var tokenSource = new CancellationTokenSource();
 			CancellationToken token = tokenSource.Token;
@@ -200,14 +201,13 @@ namespace Client
 			{
 				UdpClient.DownLoadFail();
 				Thread.Sleep(interval);
-#if DEBUG
-				Console.WriteLine("Time Out");
-#endif
+
+				Debug.WriteLine("Time Out");
+
 				return false;
 			}
-#if DEBUG
-			Console.WriteLine("Download Ends");
-#endif
+			Debug.WriteLine("Download Ends");
+
 			#endregion//download
 			return true;
 		}
@@ -232,7 +232,7 @@ namespace Client
 
 		private TcpClient TcpMirror=null;
 		private readonly System.Text.StringBuilder Last=new System.Text.StringBuilder();
-		private int bracket=0;
+		private int bracket=0;// packet parse
 		#endregion
 #if DEBUG
 		private string id_test = null;
@@ -252,9 +252,10 @@ namespace Client
 			// Impossible to create or change file here
 			return System.IO.File.Exists(Init.ConfFile);
         }
-#endregion
-#region constructor
+		#endregion
+		#region constructor
 
+#if DEBUG
 		// 摘要
 		//	专用于测试的构造函数
 		public CidsClient(String uuid,String Server) // for test
@@ -263,8 +264,9 @@ namespace Client
 			CidsClientInit(Server);
 			this.id_test = uuid;
         }
-        #region Init Part of UdpClient
-        private void CidsClientInit()
+#endif
+		#region Init Part of UdpClient
+		private void CidsClientInit()
         {
 			CidsClientInit(ConfData.DefaultMServer);
         }
@@ -360,8 +362,9 @@ namespace Client
 			int mainPort;
 #if DEBUG
 
-			id = id_test;
-			mainPort = 20800 ;
+            //id = id_test;
+            id = "127.0.0.1";
+            mainPort = 20800 ;
 #else
 			id=ConfData.UuId;
 			mainPort = ConfData.MainPort;
@@ -482,10 +485,11 @@ namespace Client
         }
 #endif
 #region Mirror Communication
-		private Json.MirrorReceive SendMirror(int SleepTimeMilli, bool MustGet = true)
+		private Json.MirrorReceive SendMirror(
+			int SleepTimeMilli, bool MustGet = true)
         {
-			Json.MirrorReceive result = null;
-			switch (Protocol) {
+            Json.MirrorReceive result;
+            switch (Protocol) {
 				case MirrorProtocol.Udp:
 					result= UdpSendMirror(SleepTimeMilli,MustGet);break;
 				case MirrorProtocol.Tcp:
