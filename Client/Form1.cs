@@ -37,9 +37,17 @@ namespace Client
 #if RELEASE
             Thread.Sleep(3000); // Optimise Region
 #endif
+            //// Set Wallpaper wp0.jpg
+            //string wp0 = Image.ImageConf.ToSetWallFile();
+            //if (File.Exists(wp0)) { File.Delete(wp0); }
+            //File.Copy(ConfData.SaveAbsPathFile,wp0);
+            //ClientTool.SetWallpaper();
+
             BackgroundWorker bgWorker = sender as BackgroundWorker;
             UdpClient = new CidsClient();
+            Debug.WriteLine("Begin Send Main");
             UdpClient.SendMain();
+            Debug.WriteLine("End Send Main");
             bool resend = false;
             do {
                 data = null;
@@ -48,7 +56,11 @@ namespace Client
                         ClientTool.time_out, ClientTool.interval, true);
                     resend = false;
                 }
-                catch (IOException) { UdpClient.ReSendMain();resend = true; }
+                catch (IOException ioe) {
+                    Debug.WriteLine("IOException:"+ioe.Message);
+                    UdpClient.ReSendMain();
+                    resend = true;
+                }
             } while (resend);
             ClientTool.Update(ref data);
             Client.Message.Show.MessageShow(data.Message);

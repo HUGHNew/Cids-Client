@@ -93,7 +93,8 @@ namespace Client
                 ConfData.LogoUri = new Uri(Logo);
                 #endregion
                 try { 
-                Directory.CreateDirectory(CidsImagePath);
+                    if(! Directory.Exists(CidsImagePath))
+                        Directory.CreateDirectory(CidsImagePath);
                 }catch (Exception){}
                 Image.Operation.CopyDefaultWallpaperToRaw();
             }

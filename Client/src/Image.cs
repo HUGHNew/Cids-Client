@@ -13,10 +13,10 @@ namespace Client.Image
     {
         #region Const or Readonly and Function for getting a destination file
         private static readonly string[] DstFiles = { "wp0.jpg", "wp1.jpg" };
-        private static bool UseZero = false; // Current WallPaper No
+        private static bool Zero = false; // Current WallPaper No
         // 摘要
         //  将 UseZero 取反 然后返回改后值
-        private static bool Toggel() => UseZero = !UseZero;
+        private static bool Toggel() => Zero = !Zero;
         #endregion
         public static string GetDestFile()
         {
@@ -37,7 +37,7 @@ namespace Client.Image
         // 获取现在用的
         public static string ToSetWallFile()
         {
-            return DstFiles[UseZero? 0 : 1];
+            return DstFiles[Zero? 0 : 1];
         }
     }
     #region Tool Classes about color and opacity scheme
@@ -110,6 +110,9 @@ namespace Client.Image
         public const int TextDem = 50;
         public CourceBoxes() {
             Size = 0;
+            //head = new Cource() { 
+            //    idStr="0"
+            //};
             Cources = new List<Cource>();
         }
         Cource head;
@@ -127,8 +130,11 @@ namespace Client.Image
         // 参数:
         //  regularRate :   常规当前事件的大小
         //  subShrink   :   下一条事件相对于当前的缩放比例
-        public void DrawImageSaveAs(System.Drawing.Image img, string savePath,double regularRate=0.3,double subShrink=0.8)
+        public void DrawImageSaveAs(System.Drawing.Image img,
+            string savePath,double regularRate=0.3,double subShrink=0.8)
         {
+            // Void error if no courses
+            //if (head.idStr.Equals("0")) { img.Save(savePath, System.Drawing.Imaging.ImageFormat.Jpeg); }
             Graphics g = Graphics.FromImage(img);
             int imgWidth = img.Width, imgHeight = img.Height;
             // font size 1/TextDem
@@ -171,10 +177,16 @@ namespace Client.Image
 
                 boxPoint.Y += boxWH.Height;
             }
+            Debug.WriteLine("The File to Save:"+savePath);
+            if (File.Exists(savePath)) File.Delete(savePath); // Delete if exists
             img.Save(savePath, System.Drawing.Imaging.ImageFormat.Jpeg);
+            // release all resource
+            img.Dispose();
+            g.Dispose();
         }
         // 把字画在图上
-        private void DrawText(ref Graphics g,Cource c,Rectangle rec,int leftPadding,Font headFont,Font textFont,int cols=5,int text1=2,int text2=3)
+        private void DrawText(ref Graphics g,Cource c,Rectangle rec,
+            int leftPadding,Font headFont,Font textFont,int cols=5,int text1=2,int text2=3)
         {
             Point strPoint;
             SolidBrush brush = new SolidBrush(c.titleClr);
@@ -204,14 +216,13 @@ namespace Client.Image
         }            
     };
     public class Operation{
-        // 摘要:
-        //     获取图片路径 更改图片 生成图片路径为 wp[01].jpg
-        // 参数:
-        //  BasePicture: 下载的图片路径
-        //  data        : 收到的数据
-        //  SavePath    : 图片保存路径
-        // 返回:
-        //      返回 图片绝对路径名
+        /// <summary>
+        /// 获取图片路径 更改图片 生成图片路径为 wp[01].jpg
+        /// </summary>
+        /// <param name="data">收到的数据</param>
+        /// <param name="BasePicture">下载的图片路径</param>
+        /// <param name="SavePath">图片保存路径</param>
+        /// <returns>返回 图片绝对路径名</returns>
         public static string GraphicsCompose(Json.MirrorReceive data, string BasePicture,string SavePath)
         {
             CourceBoxes boxes = new CourceBoxes();
@@ -220,13 +231,12 @@ namespace Client.Image
             boxes.DrawImageSaveAs(new Bitmap(BasePicture, true), SavePath);
             return SavePath;
         }
-        // 摘要:
-        //     获取图片路径 更改图片 生成图片路径为 wp[01].jpg
-        // 参数:
-        //  BasePicture: 下载的图片路径
-        //  data   : 收到的数据
-        // 返回:
-        //      返回 图片绝对路径名
+        /// <summary>
+        /// 获取图片路径 更改图片 生成图片路径为 wp[01].jpg 会更改使用图片值
+        /// </summary>
+        /// <param name="data">收到的数据</param>
+        /// <param name="BasePicture">已下载的图片路径 即 raw.jpg</param>
+        /// <returns>返回 图片绝对路径名</returns>
         public static string GraphicsCompose(Json.MirrorReceive data, string BasePicture)
         {
             string destPic = Path.Combine(
@@ -234,10 +244,11 @@ namespace Client.Image
                 ImageConf.GetDestFile());
             return GraphicsCompose(data, BasePicture, destPic);
         }
-        // 摘要
-        //  基于 raw.jpg 和 json 的数据 合成一张新的 课程表图片
-        // 返回
-        //  图片的绝对路径名
+        /// <summary>
+        /// 基于 raw.jpg 和 json 的数据 合成一张新的 课程表图片
+        /// </summary>
+        /// <param name="data"></param>
+        /// <returns>图片的绝对路径名</returns>
         public static string GraphicsCompose(Json.MirrorReceive data)
         {
             return GraphicsCompose(data, Data.ConfData.SaveAbsPathFile);
@@ -252,6 +263,7 @@ namespace Client.Image
             // get path
             StringBuilder CurrentPath = new StringBuilder(200);
             SystemParametersInfo(SPI_GETDESKWALLPAPER, 200, CurrentPath, 0);
+            Debug.WriteLine("Current Wallpaper Path:"+CurrentPath);
             Bitmap CurWP = new Bitmap(CurrentPath.ToString()); // get current pic
             CurWP.Save(Data.ConfData.SaveAbsPathFile); // save
         }

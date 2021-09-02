@@ -71,5 +71,47 @@ namespace Client.Test
             SystemParametersInfo(0x73, 200, wallPaperPath, 0).ToString();
             new System.Drawing.Bitmap(wallPaperPath.ToString()).Save(save);
         }
+        public static void image_switch() {
+            var ent = new Json.ReceiveComponent.EventData
+            {
+                Kch = "1234",
+                Kxh = 1,
+                Jsxm = "Someone",
+                Jxdd = "二基楼"
+            };
+            var emp = new Json.ReceiveComponent.EventData{};
+            Json.MirrorReceive fake_data = new Json.MirrorReceive
+            {
+                Image_url = "-",
+                Event = ent,
+                Next_event=emp,
+                NeedUpdate = true,
+                Time = ""
+            };
+            Json.MirrorReceive empty_data = new Json.MirrorReceive {
+                Image_url = "",
+                NeedUpdate = false
+            };
+            Json.MirrorReceive info_data = new Json.MirrorReceive
+            {
+                Image_url = "",
+                NeedUpdate = true,
+                Event = ent,
+                Next_event=emp
+            };
+
+            CUWL("fake data first time",ref fake_data);
+            CUWL("empty",ref empty_data);
+            CUWL("fake again", ref fake_data);
+            CUWL("empty", ref empty_data);
+            CUWL("fake again", ref fake_data);
+            CUWL("empty", ref info_data);
+            CUWL("fake again", ref fake_data);
+        }
+        public static void CUWL(string content, ref Json.MirrorReceive data)
+        {
+            Debug.WriteLine(content);
+            CidsClient.ClientUpdate(ref data);
+        }
     }
 }
