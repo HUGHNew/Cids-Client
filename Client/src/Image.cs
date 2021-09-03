@@ -225,10 +225,18 @@ namespace Client.Image
         /// <returns>返回 图片绝对路径名</returns>
         public static string GraphicsCompose(Json.MirrorReceive data, string BasePicture,string SavePath)
         {
-            CourceBoxes boxes = new CourceBoxes();
-            boxes.Add(new Cource(data.Event.GetReadable()));
-            boxes.Add(new Cource(data.Next_event.GetReadable()));
-            boxes.DrawImageSaveAs(new Bitmap(BasePicture, true), SavePath);
+            Debug.WriteLine("GraphicsCompose Json : " + data.ToString());
+            if (!data.Equals(null))
+            {
+                CourceBoxes boxes = new CourceBoxes();
+                boxes.Add(new Cource(data.Event.GetReadable()));
+                boxes.Add(new Cource(data.Next_event.GetReadable()));
+                boxes.DrawImageSaveAs(new Bitmap(BasePicture, true), SavePath);
+            }
+            else
+            {
+                File.Copy(BasePicture, SavePath);
+            }
             return SavePath;
         }
         /// <summary>

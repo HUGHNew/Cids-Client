@@ -2,6 +2,7 @@
 using System.IO;
 using Newtonsoft.Json;
 using System.Windows.Forms;
+using System.Threading;
 
 namespace Client
 {
@@ -39,10 +40,16 @@ namespace Client
             //t2();
             //OctBytesTest();
             //Test.ImgTest.ImgSwitch();
-            Test.ImgTest.image_switch();
-            //Application.EnableVisualStyles();
-            //Application.SetCompatibleTextRenderingDefault(false);
-            //Application.Run(new Form1());
+            //Test.ImgTest.image_switch();
+            Application.EnableVisualStyles();
+            Application.SetCompatibleTextRenderingDefault(false);
+            Form1 MainForm = new Form1();
+            Application.Run(MainForm);
+            //Debug.WriteLine("Before Sleep");
+            //Thread.Sleep(2000);
+            //Debug.WriteLine("End Sleep");
+            //MainForm.Hide();
+            //Debug.WriteLine("End Hide");
         }
         public static void MvDir()
         {

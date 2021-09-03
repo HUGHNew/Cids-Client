@@ -23,6 +23,24 @@ namespace Client
             Conf();
             BGWorkerMain.RunWorkerAsync();
         }
+        private void HideForm()
+        {
+            this.WindowState = FormWindowState.Minimized;
+            this.ShowInTaskbar = false;
+            SetVisibleCore(false);
+        }
+        /// <summary>
+        /// seems not need
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void Form1_Load(object sender, EventArgs e)
+        {
+            this.BeginInvoke(new Action(() => {
+                this.Hide();
+                this.Opacity = 1;
+            }));
+        }
         private static void Conf()
         {
             if (Init.Configuration()==false) // failed
@@ -42,7 +60,6 @@ namespace Client
             //if (File.Exists(wp0)) { File.Delete(wp0); }
             //File.Copy(ConfData.SaveAbsPathFile,wp0);
             //ClientTool.SetWallpaper();
-
             BackgroundWorker bgWorker = sender as BackgroundWorker;
             UdpClient = new CidsClient();
             Debug.WriteLine("Begin Send Main");
