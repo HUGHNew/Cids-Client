@@ -16,6 +16,25 @@ using System.Collections.Generic;
 
 namespace Client
 {
+	public class Charset { 
+		public static String UTF8(byte[] bytes)
+        {
+			return System.Text.Encoding.UTF8.GetString(bytes);
+        }
+		public static byte[] UTF8(String str)
+        {
+			return System.Text.Encoding.UTF8.GetBytes(str);
+		}
+		public static String ASCII(byte[] bytes)
+		{
+			return System.Text.Encoding.ASCII.GetString(bytes);
+		}
+		public static byte[] ASCII(String str)
+		{
+			return System.Text.Encoding.ASCII.GetBytes(str);
+		}
+	}
+
 	public class ClientTool
     {
 		public const int ToMainRequestLength = 8;
@@ -29,27 +48,41 @@ namespace Client
         public static byte[] GetOctByte(String id) {
 			byte[] bid = System.Text.Encoding.ASCII.GetBytes(id);
 			byte[] Gram = new byte[8];
-			for (int i = 0; i < 7; ++i)
+			int bid_len = bid.Length;
+            if (bid_len < 7)
+            {
+				for(int i = 0; i < 7 - bid_len; ++i)
+                {
+					Gram[i] = 0;
+                }
+            }
+			for (int i = 0; i < bid_len; ++i)
 			{
-                Gram[i] = (byte)(bid[i] - '0');
+                Gram[i+bid_len] = (byte)(bid[i] - '0');
 			}
 			Gram[7] = 0; // first time value
 			return Gram;
 		}
 		public static String ComposeMirrorRequest(String id,String Last) {
 			String time=Last ?? "null";
-			return $"{{\"UUID\":\"{id}\",\"time\":{time}}}";
+			Json.MirrorRequest request = new Json.MirrorRequest(id, Last ?? "null");
+			return Newtonsoft.Json.JsonConvert.SerializeObject(request);
 		}
 		// 摘要
 		//	返回一个 指定间隔 的随机睡眠时间
 		//	min - max
 #if DEBUG
-		public static int SendGapTime => NextInt % (ConfData.SleepMin==0?2000: ConfData.SleepMin) 
-			+ (ConfData.SleepMax == 0 ? 3000 : ConfData.SleepMax);
+		public static int SendGapTime => NextInt % (ConfData.SleepMin==0?1000: ConfData.SleepMin) 
+			+ (ConfData.SleepMax == 0 ? 500 : ConfData.SleepMax);
 #else
 		public static int SendGapTime => NextInt % ConfData.SleepMin + ConfData.SleepMax;
 #endif
-		public const int NoMirrorConnectSleepFactor = 100;
+		public const int NoMirrorConnectSleepFactor =
+#if DEBUG
+			2;
+#else
+			100;
+#endif
 		#region Update And Set Wallpaper All the useful function
 		const int SPI_SETDESKWALLPAPER = 20;
 		const int SPIF_UPDATEINIFILE = 0x01;
@@ -62,13 +95,28 @@ namespace Client
 			Centered,
 			Stretched
 		}
+		/// <summary>
+		/// 设置壁纸
+		/// </summary>
+		/// <param name="style"></param>
 		public static void SetWallpaper(Style style=Style.Stretched)
 		{
+#if DEBUG
+			string fileName = Path.Combine(@"C:\Windows\Temp\Cids\image", Image.ImageConf.ToSetWallFile());
+			Console.WriteLine("Current Wallpaper : "+ImageConf.ToSetWallFile());
+#else
 			string fileName = Path.Combine(ConfData.CidsImagePath, Image.ImageConf.ToSetWallFile());
+#endif
 			ClientTool.SetWallpaper(fileName, style);
 		}
+		/// <summary>
+		/// 设置壁纸
+		/// </summary>
+		/// <param name="strSavePath">图片路径</param>
+		/// <param name="style">图片设置模式</param>
 		public static void SetWallpaper(string strSavePath, Style style)
 		{
+			Debug.WriteLine("Set Wallpaper Now:"+strSavePath);
 #region Set Wall
 			RegistryKey key = Registry.CurrentUser.OpenSubKey(@"Control Panel\Desktop", true); // get the key of desk wallpaper
 			if (style == Style.Stretched)
@@ -133,25 +181,53 @@ namespace Client
 			}
 			catch (Exception e)
 			{
-#if DEBUG
-				Console.WriteLine(e.Message);
-#endif
+				Debug.WriteLine("Exception when http downloading:"+e.Message);
 				return false;
 			}
 			if (File.Exists(filename)) File.Delete(filename);
-			File.Move(tmp, filename);
+			try { 
+				File.Move(tmp, filename);
+			}catch(DirectoryNotFoundException dnfe)
+            {
+				Debug.WriteLine("target file position:"+filename);
+				Debug.WriteLine("source file position:" + tmp);
+				throw dnfe;
+            }
 			return true;
 		}
-		public static bool TryDownload(ref CidsClient UdpClient, ref Json.MirrorReceive data, int time_out, int interval, int limit = 30)
+		/// <summary>
+		/// Attempt to download image
+		/// </summary>
+		/// <param name="UdpClient"></param>
+		/// <param name="data"></param>
+		/// <param name="time_out"></param>
+		/// <param name="interval"></param>
+		/// <param name="first"></param>
+		/// <param name="limit"></param>
+		/// <returns>是否成功下载</returns>
+		public static bool TryDownload(
+			ref CidsClient UdpClient, ref Json.MirrorReceive data,
+			int time_out, int interval, bool first=false ,int limit = 30)
 		{
 			// get wallpaper file
 			// An Absolute One
 			string wallpaperPath = Data.ConfData.SaveAbsPathFile;
-
-			// get json
-			data = UdpClient.SendFirstMirror();
+            if (first)
+            {
+				// get json
+				data = UdpClient.SendFirstMirror();
+				Debug.WriteLine("Get Json For First Send Mirror");
+			}
+            else
+            {
+				Debug.WriteLine("Not First Time Com with Mirror");
+            }
 			String ImgUrl = data.Image_url;
-#region Download File
+			if (ImgUrl == null || ImgUrl == "") return false;
+			#region Download File
+
+			Debug.WriteLine("Start to Download");
+
 			// Set Attempt Limit
 			var tokenSource = new CancellationTokenSource();
 			CancellationToken token = tokenSource.Token;
@@ -160,13 +236,25 @@ namespace Client
 			{
 				UdpClient.DownLoadFail();
 				Thread.Sleep(interval);
+				Debug.WriteLine("URL:"+data.Image_url);
+				Debug.WriteLine("Time Out");
+
+				return false;
 			}
-#endregion//download
+			Debug.WriteLine("Download Ends");
+
+			#endregion//download
 			return true;
 		}
+		/// <summary>
+		/// 保存图片后 更新壁纸
+		/// </summary>
+		/// <param name="data">Json数据包</param>
+		/// <returns>是否成功操作</returns>
 		public static bool Update(ref Json.MirrorReceive data)
 		{
-			Operation.GraphicsCompose(data);
+			string file=Operation.GraphicsCompose(data);
+			Debug.WriteLine($"In Update, to Set File:{file}");
 			SetWallpaper();
 			return true;
 		}
@@ -184,8 +272,8 @@ namespace Client
 		private MirrorProtocol Protocol;
 
 		private TcpClient TcpMirror=null;
-		private readonly System.Text.StringBuilder Last;
-		private int bracket=0;
+		private readonly System.Text.StringBuilder Last=new System.Text.StringBuilder();
+		private int bracket=0;// packet parse
 		#endregion
 #if DEBUG
 		private string id_test = null;
@@ -205,9 +293,10 @@ namespace Client
 			// Impossible to create or change file here
 			return System.IO.File.Exists(Init.ConfFile);
         }
-#endregion
-#region constructor
+		#endregion
+		#region constructor
 
+#if DEBUG
 		// 摘要
 		//	专用于测试的构造函数
 		public CidsClient(String uuid,String Server) // for test
@@ -216,8 +305,9 @@ namespace Client
 			CidsClientInit(Server);
 			this.id_test = uuid;
         }
-        #region Init Part of UdpClient
-        private void CidsClientInit()
+#endif
+		#region Init Part of UdpClient
+		private void CidsClientInit()
         {
 			CidsClientInit(ConfData.DefaultMServer);
         }
@@ -228,7 +318,11 @@ namespace Client
 		private void CidsClientInit(IPAddress server)
 		{
 			MainServer = server;
+#if DEBUG
+			Protocol = MirrorProtocol.Tcp;
+#else
 			Protocol = (MirrorProtocol)(ConfData.MirrorProtocol);
+#endif
 #if Connect
 			Client.Connect(MainServer, ConfData.MainPort);
 #endif
@@ -243,6 +337,7 @@ namespace Client
 			CidsClientInit(server == null ? ConfData.DefaultMServer : IPAddress.Parse(server));
 		}
 #endregion
+		public int Available => Client.Available;
 		public void DownLoadFail()
         {
 			lastTime = null;
@@ -261,13 +356,38 @@ namespace Client
 				System.Threading.Thread.Sleep(ConfData.SendDelayTime);
             }
         }
-        #region Main Communications
-        // 摘要
-        //	重发数据报给 MainServer 并告知服务器重发原因
-        // 返回
-        //	Mirror IP
-        public String ReSendMain()
+        private static void SleepForMirrorConnection()
         {
+			Thread.Sleep(
+				ClientTool.SendGapTime
+				*
+				ClientTool.NoMirrorConnectSleepFactor
+			);
+		}
+		public static void ClientUpdate(CidsClient client, ref Json.MirrorReceive data)
+        {
+			// update information
+			if (data.Image_url!=null && data.Image_url != "")
+			{
+				Debug.WriteLine("In ClientUpdate Going to Download and Update");
+				ClientTool.TryDownload(ref client, ref data,
+					ClientTool.time_out, ClientTool.interval);
+				ClientTool.Update(ref data);
+				//ClientTool.SetWallpaper();
+			}
+			Message.Show.MessageShow(data.Message);
+
+			Debug.WriteLine("Client Update:"+Newtonsoft.Json.JsonConvert.SerializeObject(data));
+		}
+		#region Main Communications
+		// 摘要
+		//	重发数据报给 MainServer 并告知服务器重发原因
+		// 返回
+		//	Mirror IP
+		public String ReSendMain()
+        {
+			bracket = 0;
+			Last.Clear();
 			return SendMain(1);
         }
 		// 摘要:
@@ -278,14 +398,11 @@ namespace Client
 		//			正常使用:使用默认值
 		public String SendMain(byte InitSendTime=2)
         {
+			Debug.WriteLine("Send Main to Get Mirror");
 			int GetMirrorIp = 0;
 			string id;
 			int mainPort;
 #if DEBUG
-
-			id = id_test;
-			mainPort = 20800 ;
-#else
 			id=ConfData.UuId;
 			mainPort = ConfData.MainPort;
 #endif
@@ -305,34 +422,47 @@ namespace Client
 				Console.WriteLine("Init Task to Get Mirror Ip");
 #endif
 				byte[] getip;
-				Func<byte[], bool> AllZero = (byte[] array) => {
-					foreach (byte b in array)
-					{
-						if (b != 0) return false;
-					} return true;
-				};
-				do
+                bool AllZero(byte[] array)
+                {
+                    foreach (byte b in array)
+                    {
+                        if (b != 0) return false;
+                    }
+                    return true;
+                }
+                do
 				{
 					// get MainServer Response
 					// get mirror ip
-					getip = Client.Receive(ref remote);
-					if (AllZero(getip)) { 
-						Thread.Sleep(
-							ClientTool.SendGapTime 
-							* 
-							ClientTool.NoMirrorConnectSleepFactor);
+					do
+					{
+						getip = Client.Receive(ref remote);
+#if DEBUG
+					Console.WriteLine($"Recv:{getip[0]}.{getip[1]}.{getip[2]}.{getip[3]}");
+					Console.WriteLine("Available Size:{0}",Client.Available);
+#endif
+					} while (AllZero(getip)&&Client.Available > 0);
+					if (AllZero(getip))
+					{
+						Debug.WriteLine("no mirror now");
+						Interlocked.CompareExchange(ref GetMirrorIp, 2, 0);
+						SleepForMirrorConnection();
 					}
-					else break;
+					else {
+						Debug.WriteLine("Got a Mirror Ip");
+						break;
+					}
 				} while (true);
 				MirrorIP = String.Join(".", getip); // It's OK
+				Debug.WriteLine("Mirror IP:"+MirrorIP);
 				System.Threading.Interlocked.Increment(ref GetMirrorIp);
 			});
             // SendTimes(Gram,ClientTool.ToMainRequestLength, remote);
 
 			do{ // send until receive
-#if DEBUG
-				Console.WriteLine($"\nSend for Mirror IP {SendTime} times");
-#endif
+//#if DEBUG
+//				Console.WriteLine($"\nSend for Mirror IP {SendTime} times");
+//#endif
 				// Gram[7] equals 0
 #if Connect
 				SendTimes(Gram, ClientTool.ToMainRequestLength); // The first send
@@ -345,7 +475,16 @@ namespace Client
 				{
 					++SendTime;
 				}
-			} while (System.Threading.Interlocked.Equals(GetMirrorIp,0));
+#if DEBUG
+#endif
+				while (Equals(Interlocked.CompareExchange(ref GetMirrorIp,0,2),2)) { // Ip All Zero
+					// Sleep For A Short Time for Mirrors Connections
+#if DEBUG
+					Console.WriteLine("Sleep Time");
+#endif
+					SleepForMirrorConnection();
+				}
+			} while (Interlocked.Equals(GetMirrorIp,0));
 #if Connect
 			int port;
 #if DEBUG
@@ -363,56 +502,84 @@ namespace Client
 				case MirrorProtocol.Quic:
 					break;
 				case MirrorProtocol.Tcp:
-		#if DEBUG
+#if DEBUG
 					TcpMirror = new TcpClient(MirrorIP, 20801);
-		#else
+#else
 					TcpMirror = new TcpClient(MirrorIP, ConfData.MirrorPort);
-		#endif// Debug
+#endif// Debug
 					break;
 			}
 			return MirrorIP;
 		}
-        #endregion//Main Com
+#endregion//Main Com
 #if DEBUG
         public CidsClient SetMirrorIp(String ip)
         {
 			MirrorIP = ip;
             if (Protocol == MirrorProtocol.Tcp)
             {
-				TcpMirror.Close();
+				if(TcpMirror!=null)TcpMirror.Close();
 				TcpMirror = new TcpClient(MirrorIP, 20801);
 			}
 			return this;
         }
-#endif
-		#region Mirror Communication
-		private Json.MirrorReceive SendMirror(int SleepTimeMilli, bool MustGet = true)
+		public CidsClient SetProtocol(MirrorProtocol mp)
         {
-			switch (Protocol) {
+			Protocol = mp;
+			return this;
+        }
+#endif
+#region Mirror Communication
+		private Json.MirrorReceive SendMirror(
+			int SleepTimeMilli, bool MustGet = true)
+        {
+            Json.MirrorReceive result;
+            switch (Protocol) {
 				case MirrorProtocol.Udp:
-					return UdpSendMirror(SleepTimeMilli,MustGet);
+					result= UdpSendMirror(SleepTimeMilli,MustGet);break;
 				case MirrorProtocol.Tcp:
-					return TcpSendMirror(SleepTimeMilli,MustGet);
+					result = TcpSendMirror(SleepTimeMilli,MustGet);break;
 				case MirrorProtocol.Quic:
 				default:
 					return null;
 			}
+			if (result != null) {
+				Debug.WriteLine("In Send Mirror, it's going to download and update now");
+				ClientUpdate(this,ref result);
+			}
+			return result;
         }
 		public Json.MirrorReceive SendFirstMirror() {
 			return SendMirror(ClientTool.SendGapTime); // sleep 3-5 seconds each gap
 		}
-		// 摘要:
-		//		发送心跳包 检查Mirror是否存活 需要外部计时计数
-		// 返回:
-		//		收到信息状态
-		//		0 -- 没收到
-		//		1 -- 当前没有更新或半包
-		//		2 -- 更新
+
+		/// <summary>
+		/// 发送心跳包 检查Mirror是否存活 需要外部计时计数
+		/// </summary>
+		/// <param name="data"></param>
+		/// <returns>
+		///		收到信息状态
+		///		0 -- 没收到
+		///		1 -- 当前没有更新或半包
+		///		2 -- 更新
+		/// </returns>
 		public int HeartBeat(ref Json.MirrorReceive data)
         {
+			Debug.WriteLine("HB Start");
+			var begin = DateTime.Now;
 			int bracketBeforeSend = bracket;
+#if DEBUG
+			Json.MirrorReceive receive = SendMirror(1000, false);
+#else
 			Json.MirrorReceive receive = SendMirror(ConfData.HeartBeatGap,false);
-            if (null == receive) // not recv
+#endif
+			//#if DEBUG
+			//			Console.WriteLine("receive empty:{0}",receive == null);
+			//			Console.WriteLine("HB End");
+			//#endif
+			
+			Thread.Sleep(DateTime.Now-begin);
+			if (null == receive) // not recv
             {
 				if (bracketBeforeSend == bracket)
 				{
@@ -420,18 +587,22 @@ namespace Client
 				}
 				else return 1;
             }
+			data = receive;
             if (receive.NeedUpdate)
             {
-				data = receive;
 				return 2;
             }
 			return 1;
         }
-		//	摘要:
-		//		对于心跳包的次数包装
-		//	返回:
-		//		是否在限时内获取Mirror的数据包
-		//		如果为否 则需要再次向 Main 申请 Ip
+		/// <summary>
+		/// 对于心跳包的次数包装
+		/// </summary>
+		/// <param name="data"></param>
+		/// <param name="LimitTimes"></param>
+		/// <returns>
+		///		是否在限时内获取Mirror的数据包
+		///		如果为否 则需要再次向 Main 申请 Ip
+		/// </returns>
 		public bool LimitedHeartBeat(ref Json.MirrorReceive data,uint LimitTimes) {
 			uint counter = LimitTimes;
 			do
@@ -452,29 +623,61 @@ namespace Client
         {
 			return LimitedHeartBeat(ref data, (uint)ConfData.MirrorRecvLimit);
         }
-		// 摘要
-		//	第一次连接 发心跳包 有问题重发 解决后续所有问题
+		/// <summary>
+		/// 第一次连接 发心跳包 有问题重发 解决后续所有问题
+		/// </summary>
+		/// <param name="client"></param>
+		/// <param name="data"></param>
 		public static void ClientBeat(CidsClient client,ref Json.MirrorReceive data)
         {
             while (true)
             {
-				while (client.LimitedHeartBeat(ref data))
-				{
-					// update information
-					if (data.Image_url != "")
-					{
-						ClientTool.TryDownload(ref client,ref data,
-							ClientTool.time_out, ClientTool.interval);
-						ClientTool.SetWallpaper();
-					}
-					ClientTool.Update(ref data);
+				try {
+                    while (client.LimitedHeartBeat(ref data)) { /* Update while Beat*/ }
 				}
+                catch (IOException ioe) {
+					Debug.WriteLine("Beat Exception:"+ioe.Message);
+				} // Tcp Disconnect
 				client.ReSendMain(); // Get A New Mirror In Case The Old One is Down
             }
         }
+		#region BeatTest
+#if DEBUG
+		/// <summary>
+		/// design for test
+		/// </summary>
+		/// <param name="data"></param>
+		public static void ClientUpdate(ref Json.MirrorReceive data)
+		{
+			int seed = Convert.ToInt32(DateTime.Now.Ticks & 0xffffffff);
+			Random rngix = new Random(seed);
+			// update information
+			if (data.NeedUpdate&&data.Image_url != "")
+			{
+				// Download part
+				string file = rngix.Next(3) + ".png";
+                if (File.Exists(ConfData.SaveAbsPathFile))
+                {
+					File.Delete(ConfData.SaveAbsPathFile);
+                }
+				File.Copy(Path.Combine("image",file),
+					ConfData.SaveAbsPathFile);
+                // get a file to replace the current raw.jpg
+                ClientTool.Update(ref data);
+			}
+			Message.Show.MessageShow(data.Message);
+
+			Debug.WriteLine("Client Update:" + Newtonsoft.Json.JsonConvert.SerializeObject(data));
+		}
+		public static void BeatWithoutClient(ref Json.MirrorReceive data)
+        {
+			ClientTool.Update(ref data);
+		}
+#endif
 		#endregion
+
+#endregion
 		#region Udp Protocol Mirror
-		//
 		// 摘要:
 		//		给镜像服务器发送UDP包直至获取镜像服务器JSON
 		//		发送 ASCII 字节流 收取 UTF8 字节流
@@ -534,9 +737,9 @@ namespace Client
 			}
 #endregion// end of task
             );
-			#endregion// Recv Task
+#endregion// Recv Task
 
-			#endregion// end of a timer need
+#endregion// end of a timer need
 
 #if DEBUG
 			string id = id_test ?? ConfData.UuId;
@@ -574,7 +777,7 @@ namespace Client
             }
             return RecvJson;
 		}
-		#endregion// Udp to Mirror
+#endregion// Udp to Mirror
 		#region Tcp Protocol Mirror
 		public String TcpRecvJson(ref TcpClient tcp)
         {
@@ -587,9 +790,15 @@ namespace Client
 			int ch_int;
 			char ch;
 			// Get Json
-			while (true)
+			while (true) // get a whole json or half if stream ends
 			{
-				ch_int = tcpStream.ReadByte();
+				try { 
+					ch_int = tcpStream.ReadByte();
+                }
+                catch (IOException)
+                {
+					break;
+                }
 				if (ch_int == -1)    //流结束
 					break;
 				else
@@ -638,21 +847,36 @@ namespace Client
 			byte[] JsonBytes = System.Text.Encoding.ASCII.GetBytes(StoMirror);
 
 			tcpStream.Write(JsonBytes,0,JsonBytes.Length);
+//#if DEBUG
+//			Console.WriteLine("Tcp Msg Write");
+//#endif
 
-			String Json=TcpRecvJson(tcpStream);
+			String Json =TcpRecvJson(tcpStream);
+            if (MustGet)
+            {
+				while (null == Json) {
+					Json = TcpRecvJson(tcpStream);
+				}
+#if DEBUG
+				Console.WriteLine("Must Get A Json:{0}",Json);
+#endif
+            }
             if (Json != null) // Get A Json
             {
-				try { 
+				try {
 					RecvJson = Newtonsoft.Json.JsonConvert.DeserializeObject<Json.MirrorReceive>(Json);
                 }
                 catch (Exception)
                 {
+#if DEBUG
+					Console.WriteLine("Exception Capture");
+#endif
 					RecvJson = null;
-                }
+				}
             }
 
 			return RecvJson;
 		}
-		#endregion
+#endregion
 	}
 }

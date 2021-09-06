@@ -16,8 +16,9 @@ namespace Client
         //  应用于 installer 安装之后的启动文件检查 也可应用于其他安装情形
         private static bool IntegrityCheck()
         {
-           if (null==ConfData.InitData||null== ConfData.UuId) return false;        
+           if (null==ConfData.InitData||null== ConfData.UuId) return false;
             // return null or not exists
+            Debug.WriteLine(Path.Combine(ConfData.CidsPath, ConfData.Conf));
             return File.Exists(Path.Combine(ConfData.CidsPath,ConfData.Conf));
         }
         #region Things of LocalInstall

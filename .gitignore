@@ -6,7 +6,7 @@ Client/test/img
 #
 # not essential config file
 .vs
-
+.suo
 # script snippt for push
 push
 

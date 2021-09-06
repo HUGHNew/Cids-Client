@@ -16,28 +16,21 @@ namespace Client.Test
             System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory), "Temp"),
             "img");
         public const string localhost="127.0.0.1";
-        public static void TcpTimeOutTest()
+
+        public static void MainZeroTest()
         {
-            const int port = 20000;
+            CidsClient client = new CidsClient(uuid, localhost);
             Task.Factory.StartNew(() =>
             {
-                TcpListener listener = new TcpListener(IPAddress.Parse(localhost),port);
-                listener.Start();
-                TcpClient tcp=listener.AcceptTcpClient();
-                string half = "{\"a\":7";
-                byte[] bstr =Encoding.UTF8.GetBytes(half);
-
-                tcp.GetStream().Write(bstr,0,bstr.Length);
-                Thread.Sleep(2000);
-                tcp.GetStream().WriteByte(6);
+                byte[] zero = { 0,0,0,0 };
+                byte[] local = { 127, 0, 0, 1 };
+                UdpServer.MainServer(zero);
+                Thread.Sleep(1000);
+                UdpServer.MainServer(local);
             });
-            TcpClient client = new TcpClient(localhost,port);
-            client.ReceiveTimeout = 1000;
-            byte[] json = new byte[32];
-            int got=client.GetStream().Read(json,0,json.Length);
-            Console.WriteLine(Encoding.UTF8.GetString(json,0, got));
-            Console.WriteLine($"got:{got}");
-            Thread.Sleep(2000);
+            client.SendMain();
+            Thread.Sleep(1000);
+            Console.WriteLine(client.Available);
         }
         [Obsolete]
         public static void Server()
@@ -45,20 +38,20 @@ namespace Client.Test
             UdpServer server = new UdpServer();
             server.ServerOn();
         }
-        public const string uuid = "1231230";
+        public const string uuid = "0000475";
         public const string testCenter = "192.168.233.14";
         public const string testMirror = "192.168.233.13";
         public static void ClientCenterOnly()
         {
-            CidsClient client = new CidsClient(uuid, testMirror);
+            CidsClient client = new CidsClient(uuid, testCenter);
             string ip=client.SendMain();
             Console.WriteLine(ip);
             ip = client.ReSendMain();
             Console.WriteLine(ip);
         }
 #if DEBUG
-        public static void ClienMirrorOnly() {
-            CidsClient client = new CidsClient(uuid,testCenter);
+        public static void ClientMirrorOnly() {
+            CidsClient client = new CidsClient(uuid,testMirror);
             client.SetMirrorIp(testMirror).SendFirstMirror();
         }
 #endif
@@ -77,26 +70,45 @@ namespace Client.Test
         public static void ClientRealTest()
         {
             string center = "192.168.233.14";
-            CidsClient client = new CidsClient("1231230", center);
+            CidsClient client = new CidsClient(uuid, center);
             Console.WriteLine("Mirror Ip:"+client.SendMain());
             var json = client.SendFirstMirror();
             //CidsClient.UdpClientBeat(client,ref json);
+            Console.WriteLine("First Mirror Msg:");
+            Console.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(json));
+            Console.WriteLine("Msg Ends");
             int beats = 0;
-            while (client.HeartBeat(ref json)>0)
+            Console.WriteLine("Beat Goes");
+            ClientTool.SetWallpaper();
+            CidsClient.ClientBeat(client,ref json);
+            do
             {
-                Console.WriteLine(beats++ + " Times HeatBeat");
+                //Console.WriteLine(beats++ + " Times HeatBeat");
                 if (json.NeedUpdate)
                 {
-                    Console.WriteLine("url:" + json.Image_url);
-                    Console.WriteLine("当前课程"+json.Event.GetReadable().CourseTitle);
+                    //Console.WriteLine("url:" + json.Image_url);
+                    //Console.WriteLine("当前课程"+json.Event.GetReadable().CourseTitle);
+                    if(json.Image_url!=null&& json.Image_url != "")
+                    {
+                        DLoadTest(json.Image_url);
+                        Console.WriteLine("DL new image");
+                    }
+                    Console.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(json));
+                    Message.Show.MessageShow(json.Message);
                 }
-            }
+                //Thread.Sleep(1000);
+                //json = null;
+            } while (client.HeartBeat(ref json) > 0);
             Console.WriteLine("Beat Time Out");
+        }
+        public static bool DLoadTest(String path)
+        {
+            Console.WriteLine("Path:" + Tmp);
+            return ClientTool.DownloadAbsFile(path, Tmp + "\\tmp.jpg");
         }
         public static bool DLoadTest()
         {
-            Console.WriteLine("Path:"+Tmp);
-            return ClientTool.DownloadAbsFile("http://192.168.233.14:80/3.jpg", Tmp+"\\tmp.jpg");
+            return DLoadTest("http://192.168.233.13:20803/images/1.jpg");
         }
     }
     class UdpServer
@@ -109,10 +121,10 @@ namespace Client.Test
         public const string mainlogfile = "../../test/main.log";
         public const string mirrorlogfile = "../../test/mirror.log";
         public const string localhost = "127.0.0.1";
-        private static readonly StreamWriter mainlog= new StreamWriter(mainlogfile) {
+        public static readonly StreamWriter mainlog= new StreamWriter(mainlogfile) {
             AutoFlush = true
         };
-        private static readonly StreamWriter mirrorlog = new StreamWriter(mirrorlogfile)
+        public static readonly StreamWriter mirrorlog = new StreamWriter(mirrorlogfile)
         {
             AutoFlush = true
         };
@@ -135,12 +147,13 @@ namespace Client.Test
             //Mirror();
             //HB();
         }
-        public static void MainServer() {
+        public static void MainServer(byte[] loop)
+        {
             StreamWriter stream = mainlog;
             UdpClient udp = main;
             udp.Receive(ref end); // request from client for mirror
             stream.WriteLine(end.Port);
-            byte[] loop = { 127, 0, 0, 1 };
+            
             stream.WriteLine("Main Starts");
 #if DEBUG
             
@@ -153,6 +166,10 @@ namespace Client.Test
             stream.WriteLine("Main Ends");
             //System.Threading.Thread.Sleep(1000);
             //udp.Close();
+        }
+        public static void MainServer() {
+            byte[] loop = { 127, 0, 0, 1 };
+            MainServer(loop);
         }
         public static void MirrorServer()
         {
@@ -199,6 +216,82 @@ namespace Client.Test
                 data = null;
             }
 #endif
+        }
+    }
+    class TcpTest
+    {
+        public const int port = 20801;
+        public const string localhost = "127.0.0.1";
+        public static void TcpMSvr()
+        {
+            TcpListener listener = new TcpListener(IPAddress.Parse(localhost),port);
+            listener.Start();
+            TcpClient tcp = listener.AcceptTcpClient();
+            String halfJson = "{\"needUpdate\":false";
+            byte[] bhj = Charset.UTF8(halfJson);
+            tcp.GetStream().Write(bhj,0,bhj.Length);
+            Task.Factory.StartNew(
+                () =>
+                {
+                    Thread.Sleep(3000);
+                }
+            ).Wait();
+            string end = "}";
+            byte[] be = Charset.UTF8(end);
+            tcp.GetStream().WriteByte(be[0]);
+            Thread.Sleep(3000);
+            tcp.Close();
+        }
+        public static void TcpClt()
+        {
+            Task.Factory.StartNew(
+                () => {
+                    TcpMSvr();
+                }
+            );
+            CidsClient client = new CidsClient("1231231", localhost);
+            client.SetProtocol(CidsClient.MirrorProtocol.Tcp)
+                .SetMirrorIp(localhost);
+            Thread.Sleep(500);
+            var json=client.SendFirstMirror();
+            Console.WriteLine(json.NeedUpdate);
+        }
+        public static void TcpHb()
+        {
+            Task.Factory.StartNew(
+                () => {
+                    TcpMSvr();
+                }
+            );
+            CidsClient client = new CidsClient("1231231", localhost);
+            client.SetProtocol(CidsClient.MirrorProtocol.Tcp)
+                .SetMirrorIp(localhost);
+            Json.MirrorReceive jr=null;
+            client.HeartBeat(ref jr);
+            Console.WriteLine(jr == null);
+        }
+        public static void TcpTimeOutTest()
+        {
+            const int port = 20000;
+            Task.Factory.StartNew(() =>
+            {
+                TcpListener listener = new TcpListener(IPAddress.Parse(localhost), port);
+                listener.Start();
+                TcpClient tcp = listener.AcceptTcpClient();
+                string half = "{\"a\":7";
+                byte[] bstr = Encoding.UTF8.GetBytes(half);
+
+                tcp.GetStream().Write(bstr, 0, bstr.Length);
+                Thread.Sleep(2000);
+                tcp.GetStream().WriteByte(6);
+            });
+            TcpClient client = new TcpClient(localhost, port);
+            client.ReceiveTimeout = 1000;
+            byte[] json = new byte[32];
+            int got = client.GetStream().Read(json, 0, json.Length);
+            Console.WriteLine(Encoding.UTF8.GetString(json, 0, got));
+            Console.WriteLine($"got:{got}");
+            Thread.Sleep(2000);
         }
     }
 }

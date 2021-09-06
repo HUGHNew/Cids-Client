@@ -1,16 +1,10 @@
 ﻿using System.ComponentModel;
 using System.IO;
-using System.Net.Security;
-using System.Net;
-using System.Runtime.InteropServices;
-using System.Security.Cryptography.X509Certificates;
-using System.Threading.Tasks;
 using System.Threading;
 using System;
 using System.Windows.Forms;
-using Microsoft.Win32;
 using Client.Data;
-using Client.Image;
+
 namespace Client
 {
     public partial class Form1 : Form
@@ -27,7 +21,26 @@ namespace Client
         {
             InitializeComponent();
             Conf();
+            HideForm();
             BGWorkerMain.RunWorkerAsync();
+        }
+        private void HideForm()
+        {
+            this.WindowState = FormWindowState.Minimized;
+            this.ShowInTaskbar = false;
+            SetVisibleCore(false);
+        }
+        /// <summary>
+        /// seems not need
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void Form1_Load(object sender, EventArgs e)
+        {
+            this.BeginInvoke(new Action(() => {
+                this.Hide();
+                this.Opacity = 1;
+            }));
         }
         private static void Conf()
         {
@@ -39,14 +52,34 @@ namespace Client
         }
         private String GetUrl(int choice=0){ return null; }
         private void BGWorkerMain_DoWork(object sender, System.ComponentModel.DoWorkEventArgs e)
-        { 
-            Thread.Sleep(3000);
+        {
+#if RELEASE
+            Thread.Sleep(3000); // Optimise Region
+#endif
+            //// Set Wallpaper wp0.jpg
+            //string wp0 = Image.ImageConf.ToSetWallFile();
+            //if (File.Exists(wp0)) { File.Delete(wp0); }
+            //File.Copy(ConfData.SaveAbsPathFile,wp0);
+            //ClientTool.SetWallpaper();
             BackgroundWorker bgWorker = sender as BackgroundWorker;
             UdpClient = new CidsClient();
+            Debug.WriteLine("Begin Send Main");
             UdpClient.SendMain();
-            data = null;
-            ClientTool.TryDownload(ref UdpClient,ref data, 
-                ClientTool.time_out, ClientTool.interval);
+            Debug.WriteLine("End Send Main");
+            bool resend = false;
+            do {
+                data = null;
+                try {
+                    ClientTool.TryDownload(ref UdpClient, ref data,
+                        ClientTool.time_out, ClientTool.interval, true);
+                    resend = false;
+                }
+                catch (IOException ioe) {
+                    Debug.WriteLine("IOException:"+ioe.Message);
+                    UdpClient.ReSendMain();
+                    resend = true;
+                }
+            } while (resend);
             ClientTool.Update(ref data);
             Client.Message.Show.MessageShow(data.Message);
             CidsClient.ClientBeat(UdpClient,ref data);

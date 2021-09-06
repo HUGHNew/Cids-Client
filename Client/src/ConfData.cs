@@ -61,8 +61,9 @@ namespace Client
                 #region Top i.e. base
                 try
                 {
+                    Debug.WriteLine("Cids Path : "+CidsPath);
                     ConfData.InitData = Newtonsoft.Json.JsonConvert.DeserializeObject<Json.Conf>
-                        (File.ReadAllText(CidsPath));
+                        (File.ReadAllText(Path.Combine(CidsPath,Conf)));
                 }
                 catch (Exception) // can't access or something else
                 {
@@ -92,7 +93,8 @@ namespace Client
                 ConfData.LogoUri = new Uri(Logo);
                 #endregion
                 try { 
-                Directory.CreateDirectory(CidsImagePath);
+                    if(! Directory.Exists(CidsImagePath))
+                        Directory.CreateDirectory(CidsImagePath);
                 }catch (Exception){}
                 Image.Operation.CopyDefaultWallpaperToRaw();
             }

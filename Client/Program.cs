@@ -1,7 +1,8 @@
 ﻿using System;
 using System.IO;
 using Newtonsoft.Json;
-
+using System.Windows.Forms;
+using System.Threading;
 
 namespace Client
 {
@@ -18,8 +19,18 @@ namespace Client
             //tmptest();
             //RegisrtyTest();
             //NetTest();
+            //Test.UdpTest.TcpTimeOutTest();
             //Test.UdpTest.ClientCenterOnly();
-            Test.UdpTest.TcpTimeOutTest();
+            //Test.UdpTest.ClientMirrorOnly();
+            //Test.UdpTest.ClientRealTest();
+            //Test.ImgTest.ppt();
+            //Test.ShowTest.SeriesShow();
+            //Toggel();
+            //cover();
+            //Test.ShowTest.SingleShow();
+            //Test.UdpTest.DLoadTest();
+            //Test.TcpTest.TcpClt();
+            //Test.TcpTest.TcpHb();
             //halfpack();
             //emptyList();
             //imgt0();
@@ -28,13 +39,48 @@ namespace Client
             //SendRecv();
             //t2();
             //OctBytesTest();
-            //Application.EnableVisualStyles();
-            //Application.SetCompatibleTextRenderingDefault(false);
-            //Application.Run(new Form1());
+            //Test.ImgTest.ImgSwitch();
+            //Test.ImgTest.image_switch();
+            Application.EnableVisualStyles();
+            Application.SetCompatibleTextRenderingDefault(false);
+            Form1 MainForm = new Form1();
+            Application.Run(MainForm);
+            //Debug.WriteLine("Before Sleep");
+            //Thread.Sleep(2000);
+            //Debug.WriteLine("End Sleep");
+            //MainForm.Hide();
+            //Debug.WriteLine("End Hide");
+        }
+        public static void MvDir()
+        {
+            string desktop = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
+            Directory.Move(Path.Combine(desktop, "cids-test"), Path.Combine(desktop, @"Temp\ct"));
+        }
+        public static void cover() {
+            string desktop = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
+            var files=Directory.EnumerateFiles(Path.Combine(desktop, "test"));
+            string fpath = Path.Combine(desktop, "convert");
+            foreach (var it in files) {
+                //Console.WriteLine(it);
+                string[] fn = it.Split('\\');
+                string f = fn[fn.Length - 1];
+                if (! File.Exists(Path.Combine(fpath, f)))
+                File.Move(it, Path.Combine(fpath,f));
+            }
+            //Directory.Move(Path.Combine(desktop, "test"), Path.Combine(desktop, "convert"));
         }
         static void write(string content)
         {
             Console.WriteLine(content);
+        }
+        static void Toggel()
+        {
+            bool boolean = false;
+            write(boolean.ToString());
+            boolean = !boolean;
+            write(boolean.ToString());
+            boolean = !boolean;
+            write(boolean.ToString());
         }
         public static void CS()
         {
