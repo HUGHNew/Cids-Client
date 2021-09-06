@@ -367,8 +367,9 @@ namespace Client
 		public static void ClientUpdate(CidsClient client, ref Json.MirrorReceive data)
         {
 			// update information
-			if (data.Image_url != "")
+			if (data.Image_url!=null && data.Image_url != "")
 			{
+				Debug.WriteLine("In ClientUpdate Going to Download and Update");
 				ClientTool.TryDownload(ref client, ref data,
 					ClientTool.time_out, ClientTool.interval);
 				ClientTool.Update(ref data);

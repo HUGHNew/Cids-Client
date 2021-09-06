@@ -21,6 +21,7 @@ namespace Client
         {
             InitializeComponent();
             Conf();
+            HideForm();
             BGWorkerMain.RunWorkerAsync();
         }
         private void HideForm()
