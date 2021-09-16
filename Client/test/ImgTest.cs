@@ -27,12 +27,8 @@ namespace Client.Test
             foreach(var it in files)
             {
                 CoursesBox cb = new CoursesBox();
-                Json.ReceiveComponent.ReadableEvent re = new Json.ReceiveComponent.ReadableEvent("编程原理实战与击剑技术",42, "Everyone");
-                //{
-                //    CourseTitle = "编程原理实战与击剑技术",
-                //    CourseNo = 42,
-                //    Professor = "Everyone"
-                //};
+                Json.ReceiveComponent.ReadableEvent re = new Json.ReceiveComponent.ReadableEvent
+                    ("编程原理实战与击剑技术",42, "Everyone");
                 cb.Add(new Course(re));
                 re=new Json.ReceiveComponent.ReadableEvent("击剑技术", 9, "金轮");
                 cb.Add(new Course(re));

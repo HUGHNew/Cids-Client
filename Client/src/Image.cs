@@ -4,7 +4,6 @@ using System.Drawing;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement.TreeView;
 //using Windows.Foundation;
 
 namespace Client.Image
@@ -35,7 +34,9 @@ namespace Client.Image
             //}
             return DstFiles[Toggel() ? 0 : 1];
         }
-        // 获取现在用的
+        /// <summary>
+        /// 获取现在用的壁纸
+        /// </summary>
         public static string ToSetWallFile()
         {
             return DstFiles[Zero? 0 : 1];
@@ -91,7 +92,8 @@ namespace Client.Image
             titleClr = Color.FromArgb(Opacity.text, scheme[4]);
         }
 
-        public Course(string titleString, Color titleColor, string idString, Color idColor, string teacherString, Color teacherColor, Color frameColor, Color backColor)
+        public Course(string titleString, Color titleColor, string idString, Color idColor,
+            string teacherString, Color teacherColor, Color frameColor, Color backColor)
         {
             titleStr = titleString;
             titleClr = titleColor;
@@ -105,7 +107,7 @@ namespace Client.Image
         public Color titleClr, idClr, teacherClr, frameClr, backClr;
         public string titleStr, /*课序号*/idStr, teacherStr;
     };
-    class CoursesBox
+    public class CoursesBox
     {
         public int Size{get; private set; }
         public const int TextDem = 50;
@@ -167,51 +169,69 @@ namespace Client.Image
         /// <param name="path">保存路径</param>
         public void DrawParallelBoxes(System.Drawing.Image image, string path) {
             Graphics g = Graphics.FromImage(image);
-
+            int[] rate = { 2,4,2};
             #region Draw Course and Content
             int XAxisSize = image.Width >> 2, XAxisLocate = XAxisSize*3;
-            int YAxisSize = image.Height >> 2;
+            int YAxisSize = image.Height >> 2,YAxisDelta= YAxisSize >> 3;
             // 预留20字位置 再删去两边边框 算21字位置
             int BaseFontSize = (image.Width>>2)/21;
             int edgeThick = BaseFontSize; // 字体大小一半
-            //Font boldFont = new Font("黑体", fontSize, FontStyle.Bold, GraphicsUnit.Pixel);
-            //Font regularFont = new Font("黑体", fontSize, FontStyle.Regular, GraphicsUnit.Pixel);
+
             #region Font
-            Font TitleFont= new Font("黑体", BaseFontSize, FontStyle.Bold, GraphicsUnit.Pixel);
-            Font CourseFont = new Font("黑体", BaseFontSize*4, FontStyle.Regular, GraphicsUnit.Pixel);
-            Font TearcherFont= new Font("黑体", BaseFontSize * 2, FontStyle.Regular, GraphicsUnit.Pixel);
-            Font NumFont= new Font("黑体", BaseFontSize, FontStyle.Regular, GraphicsUnit.Pixel);
+            Font TitleFont = new Font("黑体", BaseFontSize, FontStyle.Bold, GraphicsUnit.Pixel);
+            Font CourseFont = new Font("黑体", BaseFontSize*rate[0], FontStyle.Regular, GraphicsUnit.Pixel);
+            Font TearcherFont = new Font("黑体", BaseFontSize *rate[1], FontStyle.Regular, GraphicsUnit.Pixel);
+            Font NumFont = new Font("黑体", BaseFontSize * rate[2], FontStyle.Regular, GraphicsUnit.Pixel);
             // 第一行 课程名
             // 第二行 教师名
             // 第三行 课序号
-            // 空间与大小占比为 4:2:1
+            // 空间与大小占比为 2:4:2 不可能把课程放太大，不然放不下
             Pen pen = new Pen(head.frameClr,edgeThick);
             #endregion
-            // A Problem Here! How I keep update message window
-            // I should adjust the protocol locally
+            StringFormat leftFormat = new StringFormat { Alignment = StringAlignment.Near };
+            StringFormat rightFormat = new StringFormat{Alignment = StringAlignment.Far};
+            StringFormat centerFormat = new StringFormat(StringFormatFlags.LineLimit)
+                {Alignment=StringAlignment.Center};
+            // present message thought new form
             void DrawText(Course course, Rectangle rect) {
-                Point strPoint;
-                SolidBrush brush = new SolidBrush(course.titleClr);
-                //                int Xval = rect.X + rect.Width;
-                //                strPoint = new Point(Xval, rect.Y + Convert.ToInt32(rect.Height / cols) * 1); // need to change
-                //                StringFormat format = new StringFormat
-                //{
-                //Alignment = StringAlignment.Far
-                //};
-                //                graph.DrawString(c.titleStr, headFont, brush, strPoint, format);// CourseTitle--写课程标题
-                //                brush.Color = c.idClr;
-                //                strPoint = new Point(Xval, rect.Y + Convert.ToInt32(rect.Height / cols) * text1);
-                //                graph.DrawString(c.idStr, textFont, brush, strPoint, format); // CourseID--写课程号
-                //                brush.Color = c.teacherClr;
-                //                strPoint = new Point(Xval, rect.Y + Convert.ToInt32(rect.Height / cols) * text2);
-                //                graph.DrawString(c.teacherStr, textFont, brush, strPoint, format);// Teacher--写老师
+                SolidBrush brush;
+                Point LStrPoint, RStrPoint;
+                Rectangle TextRect;
+                int Xval = rect.X+XAxisSize/2; // X axis Start Point
+                LStrPoint = new Point(rect.X, rect.Y+YAxisDelta*(8-rate[2])); // only used by Id_num
+                RStrPoint = new Point(image.Width, rect.Y + YAxisDelta * (rate[0] + rate[1]));
+                //RStrPoint = new Point(Xval, rect.Y);
+                // 课程
+                brush = new SolidBrush(course.titleClr);
+                TextRect = new Rectangle(XAxisLocate, rect.Y, XAxisSize,CourseFont.Height<<1);
+                g.DrawString(course.titleStr,CourseFont,brush,TextRect,centerFormat);
+                // 教师
+                brush = new SolidBrush(course.teacherClr);
+                TextRect = new Rectangle(XAxisLocate, rect.Y+ Convert.ToInt32(YAxisDelta * rate[0] * 1.5),
+                    XAxisSize, TearcherFont.Height<<1);
+                g.DrawString(course.teacherStr, TearcherFont, brush, TextRect, centerFormat);
+                RStrPoint = new Point(image.Width, rect.Y + YAxisDelta * (rate[0]+rate[1])); // max width
+                // 课序号
+                brush = new SolidBrush(course.idClr);
+                g.DrawString("课序号为", NumFont, brush, LStrPoint, leftFormat);
+                g.DrawString(course.idStr, NumFont, brush, RStrPoint, rightFormat);
             }
+            #region Rectangle Window
             Rectangle MsgWnd = new Rectangle(XAxisLocate, 0, XAxisSize, YAxisSize); // message window
-            DrawRectangle(ref g, new Course {backClr=head.backClr}, ref MsgWnd, pen, edgeThick); // draw msg rect
-            Rectangle ThisCourse = new Rectangle(XAxisLocate, YAxisSize, XAxisSize, YAxisSize);
-            DrawRectangle(ref g, head,ref ThisCourse,pen,edgeThick);
-            Rectangle NextCourse = new Rectangle(XAxisLocate, YAxisSize*2, XAxisSize, YAxisSize);
-            DrawRectangle(ref g, head, ref NextCourse, pen, edgeThick);
+            DrawRectangle(ref g, new Course {backClr=head.backClr}, MsgWnd, pen); // draw msg rect
+            Rectangle ThisCourse = new Rectangle(XAxisLocate, YAxisSize+edgeThick, XAxisSize, YAxisSize);
+            DrawRectangle(ref g, head,ThisCourse,pen);
+            Rectangle NextCourse = new Rectangle(XAxisLocate, YAxisSize + edgeThick <<1, XAxisSize, YAxisSize);
+            DrawRectangle(ref g, head, NextCourse, pen);
+            #endregion
+            SolidBrush MsgBrush = new SolidBrush(head.titleClr);
+            g.DrawString("消息框",CourseFont,MsgBrush,new Point(XAxisLocate+XAxisSize/2,0),centerFormat);
+            // Draw Courses Info
+            DrawText(head,ThisCourse);
+            foreach(var c in Cources)
+            {
+                DrawText(c,NextCourse);
+            }
             #endregion
             #region Save Part
             if (File.Exists(path)) File.Delete(path); // Delete if exists
@@ -221,14 +241,15 @@ namespace Client.Image
             g.Dispose();
             #endregion
         }
-        //public void Draw
-        // 参数:
-        //  regularRate :   常规当前事件的大小
-        //  subShrink   :   下一条事件相对于当前的缩放比例
+        /// <summary>
+        /// 绘图并保存
+        /// </summary>
+        /// <param name="img"></param>
+        /// <param name="savePath"></param>
         public void DrawImageSaveAs(System.Drawing.Image img,string savePath)
         {
-            double regularRate = 0.3;
-            double subShrink = 0.8;
+            double regularRate = 0.3; // 常规当前事件的大小
+            double subShrink = 0.8; // 下一条事件相对于当前的缩放比例
             // Void error if no courses
             //if (head.idStr.Equals("0")) { img.Save(savePath, System.Drawing.Imaging.ImageFormat.Jpeg); }
             Graphics g = Graphics.FromImage(img);
@@ -307,6 +328,12 @@ namespace Client.Image
 
             rect.X += _thick; rect.Y += _thick;
             rect.Width -= _thick * 2; rect.Height -= _thick * 2;
+            SolidBrush brush = new SolidBrush(c.backClr);
+            graphics.FillRectangle(brush, rect); // 填充矩形背景
+        }
+        private static void DrawRectangle(ref Graphics graphics, Course c,Rectangle rect, Pen _pen)
+        {
+            graphics.DrawRectangle(_pen, rect); // 画矩形框
             SolidBrush brush = new SolidBrush(c.backClr);
             graphics.FillRectangle(brush, rect); // 填充矩形背景
         }
