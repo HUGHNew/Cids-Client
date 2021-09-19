@@ -2,7 +2,8 @@
 using System.IO;
 using Newtonsoft.Json;
 using System.Windows.Forms;
-using System.Threading;
+using System.Collections.Generic;
+using static Client.Message.Show;
 
 namespace Client
 {
@@ -15,41 +16,23 @@ namespace Client
         [STAThread]
         static void Main()
         {
-            //scatter();
-            //tmptest();
-            //RegisrtyTest();
-            //NetTest();
-            //Test.UdpTest.TcpTimeOutTest();
-            //Test.UdpTest.ClientCenterOnly();
-            //Test.UdpTest.ClientMirrorOnly();
-            //Test.UdpTest.ClientRealTest();
-            //Test.ImgTest.ppt();
-            //Test.ShowTest.SeriesShow();
-            //Toggel();
-            //cover();
-            //Test.ShowTest.SingleShow();
-            //Test.UdpTest.DLoadTest();
-            //Test.TcpTest.TcpClt();
-            //Test.TcpTest.TcpHb();
-            //halfpack();
-            //emptyList();
-            //imgt0();
-            //JsonTest.newlytest();
-            //JsonTest.test();
-            //SendRecv();
-            //t2();
-            //OctBytesTest();
-            //Test.ImgTest.ImgSwitch();
-            //Test.ImgTest.image_switch();
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Form1 MainForm = new Form1();
+            MainForm MainForm = new MainForm();
             Application.Run(MainForm);
             //Debug.WriteLine("Before Sleep");
             //Thread.Sleep(2000);
             //Debug.WriteLine("End Sleep");
             //MainForm.Hide();
             //Debug.WriteLine("End Hide");
+        }
+        
+        public static void ShowFrameTest(List<Json.ReceiveComponent.MessageData> msglist)
+        {
+            foreach(var it in msglist)
+            {
+                Application.Run(new Message.AutoClosingForm(it.ExpireTime,it.Text));
+            }
         }
         public static void MvDir()
         {
@@ -72,66 +55,6 @@ namespace Client
         static void write(string content)
         {
             Console.WriteLine(content);
-        }
-        static void Toggel()
-        {
-            bool boolean = false;
-            write(boolean.ToString());
-            boolean = !boolean;
-            write(boolean.ToString());
-            boolean = !boolean;
-            write(boolean.ToString());
-        }
-        public static void CS()
-        {
-            System.Threading.Tasks.Task.Factory.StartNew(() => {
-                Test.UdpServer.MainServer();
-            }
-            );
-            System.Threading.Thread.Sleep(100);
-            System.Threading.Tasks.Task.Factory.StartNew(() => {
-                Test.UdpServer.MirrorServer();
-                Test.UdpServer.HB();
-            }
-            );
-            Test.UdpTest.Client();
-        }
-        static void halfpack()
-        {
-            string half = "{\"needUpdate\":false";
-            Json.MirrorReceive jm = JsonConvert.DeserializeObject<Json.MirrorReceive>(half);
-            if (jm == null)
-            {
-                Console.WriteLine("null");
-            }
-            else
-            {
-                Console.WriteLine(jm.NeedUpdate);
-            }
-        }
-        static void tmptest()
-        {
-            string tmp = (Environment.GetEnvironmentVariables(EnvironmentVariableTarget.Machine)["TMP"] as string);
-            Console.WriteLine(tmp);
-            try
-            {
-                File.Create(Path.Combine(tmp, "tmp.txt"));
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine("Create Failed:" + e.Message);
-            }
-        }
-        static void NetTest()
-        {
-            Json.ConfComponent.NetData net=new Json.ConfComponent.NetData { 
-                Main_Ip="192.168.0.1",
-                Main_Port=8080,
-                Mirror_Port=9090
-            };
-            Console.WriteLine(JsonConvert.SerializeObject(net));
-            Console.WriteLine(net.IPv4);
-            //else Console.WriteLine("Null Object");
         }
     }
 }

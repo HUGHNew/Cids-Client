@@ -26,16 +26,12 @@ namespace Client.Test
             int i = 0;
             foreach(var it in files)
             {
-                CourceBoxes cb = new CourceBoxes();
-                Json.ReceiveComponent.ReadableEvent re = new Json.ReceiveComponent.ReadableEvent("编程原理实战与击剑技术",42, "Everyone");
-                //{
-                //    CourseTitle = "编程原理实战与击剑技术",
-                //    CourseNo = 42,
-                //    Professor = "Everyone"
-                //};
-                cb.Add(new Cource(re));
+                CoursesBox cb = new CoursesBox();
+                Json.ReceiveComponent.ReadableEvent re = new Json.ReceiveComponent.ReadableEvent
+                    ("编程原理实战与击剑技术",42, "Everyone");
+                cb.Add(new Course(re));
                 re=new Json.ReceiveComponent.ReadableEvent("击剑技术", 9, "金轮");
-                cb.Add(new Cource(re));
+                cb.Add(new Course(re));
                 //cb.Add(new CourceBoxes.Cource(re));
                 //cb.Add(new CourceBoxes.Cource("正方形打野", Color.Black, "直播间：606118", Color.Red, "韩金轮", Color.Green, Color.DarkGray, Color.LightGray));
                 //cb.Add(new CourceBoxes.Cource("吉吉圣经解读", Color.Black, "直播间：12306", Color.Red, "棍爹", Color.Green, Color.DarkGray, Color.LightGray));
@@ -46,16 +42,16 @@ namespace Client.Test
         public static void ppt()
         {
             var files = Path.Combine(filepath,"6.jpg");
-            CourceBoxes cb = new CourceBoxes();
+            CoursesBox cb = new CoursesBox();
             Json.ReceiveComponent.ReadableEvent re = new Json.ReceiveComponent.ReadableEvent("编译原理", 3, "潘微");
             //{
             //    CourseTitle = "编程原理实战与击剑技术",
             //    CourseNo = 42,
             //    Professor = "Everyone"
             //};
-            cb.Add(new Cource(re));
+            cb.Add(new Course(re));
             re = new Json.ReceiveComponent.ReadableEvent("击剑技术", 0, "金轮");
-            cb.Add(new Cource(re));
+            cb.Add(new Course(re));
             //cb.Add(new CourceBoxes.Cource(re));
             //cb.Add(new CourceBoxes.Cource("正方形打野", Color.Black, "直播间：606118", Color.Red, "韩金轮", Color.Green, Color.DarkGray, Color.LightGray));
             //cb.Add(new CourceBoxes.Cource("吉吉圣经解读", Color.Black, "直播间：12306", Color.Red, "棍爹", Color.Green, Color.DarkGray, Color.LightGray));
