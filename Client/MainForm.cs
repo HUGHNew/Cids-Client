@@ -33,18 +33,6 @@ namespace Client
             HideTimer.Tick += (object sender, EventArgs e) =>this.Hide();
             HideTimer.Start();
         }
-        /// <summary>
-        /// seems not need
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void Form1_Load(object sender, EventArgs e)
-        {
-            this.BeginInvoke(new Action(() => {
-                this.Hide();
-                this.Opacity = 1;
-            }));
-        }
         private static void Conf()
         {
             if (Init.Configuration()==false) // failed

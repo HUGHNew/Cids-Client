@@ -29,6 +29,7 @@ namespace Client.Message
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(AutoClosingForm));
             this.TimeProgressBar = new System.Windows.Forms.ProgressBar();
             this.MainLabel = new System.Windows.Forms.Label();
             this.CloseButton = new System.Windows.Forms.Button();
@@ -53,6 +54,7 @@ namespace Client.Message
             // CloseButton
             // 
             this.CloseButton.Font = new System.Drawing.Font("宋体", 20F);
+            this.CloseButton.Image = ((System.Drawing.Image)(resources.GetObject("CloseButton.Image")));
             this.CloseButton.Location = new System.Drawing.Point(170, 0);
             this.CloseButton.Name = "CloseButton";
             this.CloseButton.Size = new System.Drawing.Size(30, 30);

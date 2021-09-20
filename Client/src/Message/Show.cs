@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Microsoft.Toolkit.Uwp.Notifications;
 
 namespace Client.Message
@@ -9,7 +8,8 @@ namespace Client.Message
         //  弹出窗口(Toast&MessageBox)显示消息
         public static void MessageShow(List<Json.ReceiveComponent.MessageData> msglist,ToastScenario scenario=ToastScenario.Reminder)
         {
-            FormShow(msglist);
+            UrgentMessageShow method = FormShow;
+            method(msglist);
             //if (msglist == null||msglist.Count==0) return;
             //foreach(var it in msglist)
             //{
