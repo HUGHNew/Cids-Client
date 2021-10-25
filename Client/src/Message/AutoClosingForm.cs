@@ -23,7 +23,7 @@ namespace Client.Message
             Timer CloseTimer = new Timer{Interval = 1000};
             this.TimeProgressBar.Maximum = msec;
             this.TimeProgressBar.Minimum = 0;
-            this.TimeProgressBar.Step = 1;
+            this.TimeProgressBar.Step = CloseTimer.Interval;
             CloseTimer.Tick += (sender, args) => { 
                 TimeProgressBar.PerformStep();
                 if (TimeProgressBar.Value == TimeProgressBar.Maximum)
@@ -101,6 +101,11 @@ namespace Client.Message
                     ()=>Application.Run(new AutoClosingForm(msec,text)));
             }
             else{Application.Run(new AutoClosingForm(msec, text));}
+        }
+
+        private void CloseButton_Click(object sender, EventArgs e)
+        {
+            this.Close();
         }
     }
 }
