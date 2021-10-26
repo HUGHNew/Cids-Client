@@ -29,11 +29,13 @@ namespace Client
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(SideTool));
             this.ToolsPanel = new System.Windows.Forms.FlowLayoutPanel();
             this.Issue = new System.Windows.Forms.Button();
             this.Questionnaire = new System.Windows.Forms.Button();
             this.iconLabel1 = new Client.IconLabel();
+            this.HideTimer = new System.Windows.Forms.Timer(this.components);
             this.ToolsPanel.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -76,6 +78,11 @@ namespace Client
             this.iconLabel1.Size = new System.Drawing.Size(218, 70);
             this.iconLabel1.TabIndex = 0;
             // 
+            // HideTimer
+            // 
+            this.HideTimer.Enabled = true;
+            this.HideTimer.Tick += new System.EventHandler(this.Hide_Tick);
+            // 
             // SideTool
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
@@ -85,7 +92,11 @@ namespace Client
             this.Controls.Add(this.iconLabel1);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "SideTool";
+            this.ShowInTaskbar = false;
+            this.StartPosition = System.Windows.Forms.FormStartPosition.Manual;
             this.Text = "SideTool";
+            this.Load += new System.EventHandler(this.SideTool_Load);
+            this.LocationChanged += new System.EventHandler(this.Hide_Gauge);
             this.ToolsPanel.ResumeLayout(false);
             this.ResumeLayout(false);
 
@@ -97,5 +108,6 @@ namespace Client
         private System.Windows.Forms.FlowLayoutPanel ToolsPanel;
         private System.Windows.Forms.Button Issue;
         private System.Windows.Forms.Button Questionnaire;
+        private System.Windows.Forms.Timer HideTimer;
     }
 }

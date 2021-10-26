@@ -43,7 +43,6 @@ namespace Client.Message
         /// <param name="msg"></param>
         private void FormInit(string msg)
         {
-            //this.StartPosition
             this.Location=new Point(ScreenWidth-this.Width, MessageCounts*FormGap);
             ++MessageCounts;
             int lines=0;
