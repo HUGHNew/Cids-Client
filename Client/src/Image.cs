@@ -179,7 +179,8 @@ namespace Client.Image
             const int magic = 5;
             // BaseFontSize * 4 的情况下 最多可以一行5个字
             // 最多占满 
-            int TSLen = head.teacherStr.Length;
+            //if()
+            int TSLen = head.teacherStr?.Length??0;
             float TearcherRate = (float)(rate[1]*1.0/(TSLen>magic? magic:1));
             #region Font
             Font TitleFont = new Font("黑体", BaseFontSize, FontStyle.Bold, GraphicsUnit.Pixel);
@@ -359,7 +360,8 @@ namespace Client.Image
         public static string GraphicsCompose(Json.MirrorReceive data, string BasePicture,string SavePath)
         {
             Debug.WriteLine("GraphicsCompose Json : " + data.ToString());
-            if (!data.Equals(null))
+            
+            if (!data.Equals(null) && data.NeedUpdate)
             {
                 CoursesBox boxes = new CoursesBox();
                 boxes.Add(new Course(data.Event.GetReadable()));

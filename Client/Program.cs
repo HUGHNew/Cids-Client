@@ -15,11 +15,9 @@ namespace Client
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            //MainForm MainForm = new MainForm();
-            Application.Run(new SideTool());
-            //Application.Run(new Message.AutoClosingForm(10000, "中文"));
-            //Application.Run(new Message.AutoClosingForm(10000, "尝尝中文 长一点"));
-            //Application.Run(new Message.AutoClosingForm(10000, "尝尝中文 长一点 再长一点"));
+            MainForm Main = new MainForm();
+            Application.Run(Main);
+            //Application.Run(new SideTool());
         }
         public static void ShowFrameTest(List<Json.ReceiveComponent.MessageData> msglist)
         {

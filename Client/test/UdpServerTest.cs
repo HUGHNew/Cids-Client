@@ -6,7 +6,7 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-
+#if DEBUG
 namespace Client.Test
 {
     // test class
@@ -295,3 +295,4 @@ namespace Client.Test
         }
     }
 }
+#endif

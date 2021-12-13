@@ -420,8 +420,10 @@ namespace Client
 			int GetMirrorIp = 0;
 			string id;
 			int mainPort;
+			id = ConfData.UuId;
+			mainPort = ConfData.MainPort;
 #if DEBUG
-			id=ConfData.UuId;
+			id =ConfData.UuId;
 			mainPort = ConfData.MainPort;
 #endif
 			byte[] Gram = ClientTool.GetOctByte(id);

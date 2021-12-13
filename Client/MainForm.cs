@@ -14,12 +14,14 @@ namespace Client
 
         private Json.MirrorReceive data;
         private CidsClient UdpClient;
-
+        private SideTool tools;
         
         public MainForm()
         {
             InitializeComponent();
             Conf();
+            tools = new SideTool();
+            tools.Show();
             HideForm();
             BGWorkerMain.RunWorkerAsync();
         }
