@@ -14,12 +14,14 @@ namespace Client
 
         private Json.MirrorReceive data;
         private CidsClient UdpClient;
-
+        private SideTool tools;
         
         public MainForm()
         {
             InitializeComponent();
             Conf();
+            tools = new SideTool();
+            tools.Show();
             HideForm();
             BGWorkerMain.RunWorkerAsync();
         }
@@ -32,18 +34,6 @@ namespace Client
             Timer HideTimer = new Timer{Interval = 5000};// set logo display time
             HideTimer.Tick += (object sender, EventArgs e) =>this.Hide();
             HideTimer.Start();
-        }
-        /// <summary>
-        /// seems not need
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void Form1_Load(object sender, EventArgs e)
-        {
-            this.BeginInvoke(new Action(() => {
-                this.Hide();
-                this.Opacity = 1;
-            }));
         }
         private static void Conf()
         {

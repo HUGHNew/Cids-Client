@@ -4,7 +4,7 @@ using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
 using Client.Image;
-
+#if DEBUG
 namespace Client.Test
 {
     class ImgTest
@@ -111,3 +111,4 @@ namespace Client.Test
         }
     }
 }
+#endif

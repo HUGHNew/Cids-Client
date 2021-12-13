@@ -376,7 +376,25 @@ namespace Client
 				//ClientTool.SetWallpaper();
 			}
 			Message.Show.MessageShow(data.Message);
-
+            if (data.NeedUpdate)
+            {
+				const string log = "msg.log";
+				string logfile = Path.Combine(ConfData.CidsImagePath, log);
+				if (File.Exists(logfile)) {
+					File.Create(logfile).Close();
+                }
+                System.Text.StringBuilder content=new System.Text.StringBuilder();
+				foreach(var i in data.Message)
+                {
+					content.AppendLine(
+						$"{DateTime.Now}:Message Arrive" +
+						$"\n\tTitle:{i.Title}\n\tText:{i.Text}"
+						);
+                }
+				StreamWriter logger=File.AppendText(logfile);
+				logger.WriteLine(content.ToString());
+				logger.Flush();logger.Close();
+            }
 			Debug.WriteLine("Client Update:"+Newtonsoft.Json.JsonConvert.SerializeObject(data));
 		}
 		#region Main Communications
@@ -402,8 +420,10 @@ namespace Client
 			int GetMirrorIp = 0;
 			string id;
 			int mainPort;
+			id = ConfData.UuId;
+			mainPort = ConfData.MainPort;
 #if DEBUG
-			id=ConfData.UuId;
+			id =ConfData.UuId;
 			mainPort = ConfData.MainPort;
 #endif
 			byte[] Gram = ClientTool.GetOctByte(id);

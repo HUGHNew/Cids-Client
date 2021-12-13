@@ -169,18 +169,23 @@ namespace Client.Image
         /// <param name="path">保存路径</param>
         public void DrawParallelBoxes(System.Drawing.Image image, string path) {
             Graphics g = Graphics.FromImage(image);
-            int[] rate = { 2,4,2};
+            int[] rate = {2,4,2};
             #region Draw Course and Content
             int XAxisSize = image.Width >> 2, XAxisLocate = XAxisSize*3;
             int YAxisSize = image.Height >> 2,YAxisDelta= YAxisSize >> 3;
             // 预留20字位置 再删去两边边框 算21字位置
             int BaseFontSize = (image.Width>>2)/21;
             int edgeThick = BaseFontSize; // 字体大小一半
-
+            const int magic = 5;
+            // BaseFontSize * 4 的情况下 最多可以一行5个字
+            // 最多占满 
+            //if()
+            int TSLen = head.teacherStr?.Length??0;
+            float TearcherRate = (float)(rate[1]*1.0/(TSLen>magic? magic:1));
             #region Font
             Font TitleFont = new Font("黑体", BaseFontSize, FontStyle.Bold, GraphicsUnit.Pixel);
             Font CourseFont = new Font("黑体", BaseFontSize*rate[0], FontStyle.Regular, GraphicsUnit.Pixel);
-            Font TearcherFont = new Font("黑体", BaseFontSize *rate[1], FontStyle.Regular, GraphicsUnit.Pixel);
+            Font TearcherFont = new Font("黑体", BaseFontSize * TearcherRate, FontStyle.Regular, GraphicsUnit.Pixel);
             Font NumFont = new Font("黑体", BaseFontSize * rate[2], FontStyle.Regular, GraphicsUnit.Pixel);
             // 第一行 课程名
             // 第二行 教师名
@@ -188,7 +193,7 @@ namespace Client.Image
             // 空间与大小占比为 2:4:2 不可能把课程放太大，不然放不下
             Pen pen = new Pen(head.frameClr,edgeThick);
             #endregion
-            StringFormat leftFormat = new StringFormat { Alignment = StringAlignment.Near };
+            StringFormat leftFormat = new StringFormat {Alignment = StringAlignment.Near };
             StringFormat rightFormat = new StringFormat{Alignment = StringAlignment.Far};
             StringFormat centerFormat = new StringFormat(StringFormatFlags.LineLimit)
                 {Alignment=StringAlignment.Center};
@@ -355,12 +360,13 @@ namespace Client.Image
         public static string GraphicsCompose(Json.MirrorReceive data, string BasePicture,string SavePath)
         {
             Debug.WriteLine("GraphicsCompose Json : " + data.ToString());
-            if (!data.Equals(null))
+            
+            if (!data.Equals(null) && data.NeedUpdate)
             {
                 CoursesBox boxes = new CoursesBox();
                 boxes.Add(new Course(data.Event.GetReadable()));
                 boxes.Add(new Course(data.Next_event.GetReadable()));
-                boxes.DrawImageSaveAs(new Bitmap(BasePicture, true), SavePath);
+                boxes.DrawImageSaveAs(new Bitmap(BasePicture, true), SavePath,CoursesBox.DrawSchema.Equidistant);
             }
             else
             {

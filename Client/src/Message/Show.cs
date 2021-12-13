@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Microsoft.Toolkit.Uwp.Notifications;
 
 namespace Client.Message
@@ -9,7 +8,9 @@ namespace Client.Message
         //  弹出窗口(Toast&MessageBox)显示消息
         public static void MessageShow(List<Json.ReceiveComponent.MessageData> msglist,ToastScenario scenario=ToastScenario.Reminder)
         {
-            FormShow(msglist);
+            //UrgentMessageShow method = FormShow;
+            UrgentMessageShow method = FormShowParallel;
+            method(msglist);
             //if (msglist == null||msglist.Count==0) return;
             //foreach(var it in msglist)
             //{
@@ -33,9 +34,10 @@ namespace Client.Message
         public delegate void UrgentMessageShow(List<Json.ReceiveComponent.MessageData> msglist);
         public static void FormShowBase(List<Json.ReceiveComponent.MessageData> msglist,bool parallel)
         {
+            if (msglist == null) return;
             foreach(var it in msglist)
             {
-                AutoClosingForm.NewAutoClosingForm(it.ExpireTime, it.Text, parallel);
+                AutoClosingForm.NewAutoClosingForm(it.ExpireTime*1000, it.Text, parallel);
             }
         }
         public static void FormShow(List<Json.ReceiveComponent.MessageData> msglist)
