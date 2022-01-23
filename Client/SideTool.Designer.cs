@@ -60,6 +60,7 @@ namespace Client
             this.Issue.TabIndex = 0;
             this.Issue.Text = "意见反馈";
             this.Issue.UseVisualStyleBackColor = true;
+            this.Issue.Click += new System.EventHandler(this.STBtnIssueClick);
             // 
             // Questionnaire
             // 
