@@ -1,11 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace Client {
@@ -13,7 +8,12 @@ namespace Client {
         public SideTool() {
             InitializeComponent();
         }
-
+        private void SideTool_Load(object sender, EventArgs e) {
+            int ScreenWidth = Screen.PrimaryScreen.WorkingArea.Width;
+            Location = new Point(ScreenWidth - this.Width, 0);
+            ToolsPanelResize_CallBack();
+        }
+        #region ToolPanel Hide
         private void ToolsPanelResize(object sender, EventArgs e) { ToolsPanelResize_CallBack(); }
         private void ToolsPanelResize_CallBack() {
             int Margins = ToolsPanel.Margin.Right + ToolsPanel.Margin.Left;
@@ -26,11 +26,6 @@ namespace Client {
             }
         }
 
-        private void SideTool_Load(object sender, EventArgs e) {
-            int ScreenWidth = Screen.PrimaryScreen.WorkingArea.Width;
-            Location = new Point(ScreenWidth - this.Width, 0);
-            ToolsPanelResize_CallBack();
-        }
 
         private bool EdgeJudge() {
             if (this.Top <= 0 && this.Left <= 0) {
@@ -96,14 +91,28 @@ namespace Client {
                 }
             }
         }
+        #endregion
+
+        #region Json Getter
+        private readonly Queue<Json.JsonExtensionBase> Feedbacks=new Queue<Json.JsonExtensionBase>();
+        public Json.JsonExtensionBase FeedbackGenerator { get {
+                return Feedbacks.Count==0?null:Feedbacks.Dequeue();
+            } }
+        #endregion
 
         private void STBtnIssueClick(object sender, EventArgs e) {
             Feedback fd=new Feedback();
             DialogResult result= fd.ShowDialog();
             if(result == DialogResult.OK) {
-                // get msg
-                Debug.WriteLine(fd.FeedbackMessage);
+                Feedbacks.Enqueue(new Json.Issue {
+                    message= fd.FeedbackMessage,
+                    time=Time.FdNow()
+                });
             }
+        }
+
+        private void Questionnaire_Click(object sender, EventArgs e) {
+            AutoClosingMessageBox.Show("当前没有可填写的问卷");
         }
     }
 }

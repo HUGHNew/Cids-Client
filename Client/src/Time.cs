@@ -19,6 +19,10 @@ namespace Client
 			String clock = DateTime.Now.ToLongTimeString().Replace(":", "-");
 			return year + "-" + day + "-" + clock;
 		}
+		//2022-01-20:21-14-03
+		public static String FdNow() {
+			return DateTime.Now.ToString("yyyy-MM-dd:HH-mm-ss");
+		}
 	}
 
 }

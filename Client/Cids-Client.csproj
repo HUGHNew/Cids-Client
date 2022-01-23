@@ -79,6 +79,7 @@
     <Compile Include="src\Debug.cs" />
     <Compile Include="src\Init.cs" />
     <Compile Include="src\Image.cs" />
+    <Compile Include="src\Json\Extensions.cs" />
     <Compile Include="src\Message\AutoClosingForm.cs">
       <SubType>Form</SubType>
     </Compile>
