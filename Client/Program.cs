@@ -15,7 +15,8 @@ namespace Client
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            MainForm Main = new MainForm();
+            Form Main = new Feedback();
+            //Form Main = new MainForm();
             Application.Run(Main);
             //Application.Run(new SideTool());
         }
