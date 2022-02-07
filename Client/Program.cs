@@ -15,10 +15,10 @@ namespace Client
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Form Main = new Feedback();
-            //Form Main = new MainForm();
+            //Form Main = new Feedback();
+            Form Main = new MainForm();
             Application.Run(Main);
-            //Application.Run(new SideTool());
+            Application.Run(new SideTool());
         }
         public static void ShowFrameTest(List<Json.ReceiveComponent.MessageData> msglist)
         {

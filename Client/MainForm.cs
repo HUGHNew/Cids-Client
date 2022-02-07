@@ -56,6 +56,8 @@ namespace Client
             //ClientTool.SetWallpaper();
             BackgroundWorker bgWorker = sender as BackgroundWorker;
             UdpClient = new CidsClient();
+            Debug.WriteLine("add tool ref to client-socket");
+            UdpClient.AddToolRef(ref tools);
             Debug.WriteLine("Begin Send Main");
             UdpClient.SendMain();
             Debug.WriteLine("End Send Main");

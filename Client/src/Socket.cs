@@ -54,11 +54,6 @@ namespace Client {
             Gram[7] = 0; // first time value
             return Gram;
         }
-        public static String ComposeMirrorRequest(String id, String Last) {
-            String time = Last ?? "null";
-            Json.MirrorRequest request = new Json.MirrorRequest(id, Last ?? "null");
-            return Newtonsoft.Json.JsonConvert.SerializeObject(request);
-        }
         // 摘要
         //	返回一个 指定间隔 的随机睡眠时间
         //	min - max
@@ -257,7 +252,22 @@ namespace Client {
         #endregion
         public String Mirror => MirrorIP;
         public IPAddress MainServer;
-
+        #region feedback patch
+        private SideTool tool = null;
+        public void AddToolRef(ref SideTool tool) {
+            this.tool = tool;
+        }
+        public Json.JsonExtensionBase GetFeedback => tool?.FeedbackGenerator;
+        public String ComposeMirrorRequest(String id, String Last) {
+            String time = Last ?? "null";
+            Json.MirrorRequest request = new Json.MirrorRequest(id, Last ?? "null");
+            Json.JsonExtensionBase ext = GetFeedback;
+            if (ext != null) {
+                request.AddExtension("issue", ext);
+            }
+            return Newtonsoft.Json.JsonConvert.SerializeObject(request);
+        }
+        #endregion
         #region initilization uuid file or get uuid from conf file
         static public bool ConfCheck() {
             // Impossible to create or change file here
@@ -562,7 +572,10 @@ namespace Client {
         ///		是否在限时内获取Mirror的数据包
         ///		如果为否 则需要再次向 Main 申请 Ip
         /// </returns>
-        public bool LimitedHeartBeat(ref Json.MirrorReceive data, uint LimitTimes) {
+        public bool LimitedHeartBeat(ref Json.MirrorReceive data, uint LimitTimes=0) {
+            if (LimitTimes == 0) {
+                LimitTimes = (uint)ConfData.MirrorRecvLimit;
+            }
             uint counter = LimitTimes;
             do {
                 switch (HeartBeat(ref data)) // Mirror 存活
@@ -576,9 +589,6 @@ namespace Client {
                 }
             } while (--counter != 0);
             return false;
-        }
-        public bool LimitedHeartBeat(ref Json.MirrorReceive data) {
-            return LimitedHeartBeat(ref data, (uint)ConfData.MirrorRecvLimit);
         }
         /// <summary>
         /// 第一次连接 发心跳包 有问题重发 解决后续所有问题
@@ -692,9 +702,9 @@ namespace Client {
 
 #if DEBUG
             string id = id_test ?? ConfData.UuId;
-            String StoMirror = ClientTool.ComposeMirrorRequest(id, lastTime); // the MSG will be sent to mirror
+            String StoMirror = ComposeMirrorRequest(id, lastTime); // the MSG will be sent to mirror
 #else
-			String StoMirror = ClientTool.ComposeMirrorRequest(ConfData.UuId, lastTime); // the MSG will be sent to mirror
+			String StoMirror = ComposeMirrorRequest(ConfData.UuId, lastTime); // the MSG will be sent to mirror
 #endif
             byte[] JsonBytes = System.Text.Encoding.ASCII.GetBytes(StoMirror);
 
@@ -779,10 +789,11 @@ namespace Client {
 
 #if DEBUG
             string id = id_test ?? ConfData.UuId;
-            String StoMirror = ClientTool.ComposeMirrorRequest(id, lastTime); // the MSG will be sent to mirror
+            String StoMirror = ComposeMirrorRequest(id, lastTime); // the MSG will be sent to mirror
 #else
-			String StoMirror = ClientTool.ComposeMirrorRequest(ConfData.UuId, lastTime); // the MSG will be sent to mirror
+			String StoMirror = ComposeMirrorRequest(ConfData.UuId, lastTime); // the MSG will be sent to mirror
 #endif
+            Debug.WriteLine("hb-str:"+StoMirror);
             byte[] JsonBytes = System.Text.Encoding.ASCII.GetBytes(StoMirror);
 
             tcpStream.Write(JsonBytes, 0, JsonBytes.Length);
