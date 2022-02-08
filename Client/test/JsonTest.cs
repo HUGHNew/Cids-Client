@@ -3,12 +3,20 @@ using System.IO;
 using Newtonsoft.Json;
 using Client.Json;
 using Client.Json.ReceiveComponent;
+using System.Collections.Generic;
 
 namespace Client.Test
 {
     public class JsonTest
     {
         const string root = "../../test/json/";
+        public static void fdtest() {
+            var req = new Json.MirrorRequest("1234567", "null");
+            req.AddExtension("issue", new Issue { message="msg",time=DateTime.Now.ToString("yyyy-MM-dd:HH-mm-ss") });
+            Console.WriteLine(JsonConvert.SerializeObject(req));
+            string json = "{\"need_update\":true}";
+            Console.WriteLine(JsonConvert.DeserializeObject<Json.MirrorReceive>(json).ToString());
+        }
         public static string FilePath(string file) => root+ file;
         public static void Bundle()
         {
@@ -52,7 +60,7 @@ namespace Client.Test
                 Console.WriteLine($"In file : {file}");
             }
             receive = Newtonsoft.Json.JsonConvert.DeserializeObject<Json.MirrorReceive>(System.IO.File.ReadAllText(FilePath(file)));
-            if (receive.NeedUpdate)
+            if (receive.Need_Update)
             {
                 if (writer != null)
                 {

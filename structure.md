@@ -57,7 +57,7 @@ Init.cs:
 
 ```mermaid
 graph TD
-首次使用判断--yes-->Init---->Client <--QueryIp--> Main
+首次使用判断--yes-->Init-->Client--GetIp-->Main
 首次使用判断--no-->Client--HearBeat-->Mirror
 Mirror --FirstSet--> Client --mirror_time_out-->Main
 ```
@@ -165,7 +165,10 @@ image-->wp1.bmp
 
 ### 环境变量使用
 
-1.  添加两个环境变量
+添加两个环境变量 `Machine`级别
+
+- `Cids` : 存图片和配置文件的根目录
+- `CidsUUID` : UUID
 
 ### 类介绍
 

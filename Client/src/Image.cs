@@ -361,7 +361,7 @@ namespace Client.Image
         {
             Debug.WriteLine("GraphicsCompose Json : " + data.ToString());
             
-            if (!data.Equals(null) && data.NeedUpdate)
+            if (!data.Equals(null) && data.Need_Update)
             {
                 CoursesBox boxes = new CoursesBox();
                 boxes.Add(new Course(data.Event.GetReadable()));
@@ -370,7 +370,7 @@ namespace Client.Image
             }
             else
             {
-                File.Copy(BasePicture, SavePath);
+                File.Copy(BasePicture, SavePath,true);
             }
             return SavePath;
         }
@@ -407,8 +407,10 @@ namespace Client.Image
             StringBuilder CurrentPath = new StringBuilder(200);
             SystemParametersInfo(SPI_GETDESKWALLPAPER, 200, CurrentPath, 0);
             Debug.WriteLine("Current Wallpaper Path:"+CurrentPath);
-            Bitmap CurWP = new Bitmap(CurrentPath.ToString()); // get current pic
-            CurWP.Save(Data.ConfData.SaveAbsPathFile); // save
+            //Bitmap CurWP = new Bitmap(CurrentPath.ToString()); // get current pic
+            Debug.WriteLine($"source file : {CurrentPath} | dest file : {Data.ConfData.SaveAbsPathFile}");
+            //CurWP.Save(Data.ConfData.SaveAbsPathFile); // save
+            File.Copy(CurrentPath.ToString(), Data.ConfData.SaveAbsPathFile,true);
         }
     }
 }

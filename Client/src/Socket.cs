@@ -259,8 +259,9 @@ namespace Client {
         }
         public Json.JsonExtensionBase GetFeedback => tool?.FeedbackGenerator;
         public String ComposeMirrorRequest(String id, String Last) {
-            String time = Last ?? "null";
             Json.MirrorRequest request = new Json.MirrorRequest(id, Last ?? "null");
+            if(tool == null) {tool = new SideTool();}
+            if (tool.Visible == false) { tool.Visible = true; }
             Json.JsonExtensionBase ext = GetFeedback;
             if (ext != null) {
                 request.AddExtension("issue", ext);
@@ -344,7 +345,7 @@ namespace Client {
                 //ClientTool.SetWallpaper();
             }
             Message.Show.MessageShow(data.Message);
-            if (data.NeedUpdate) {
+            if (data.Need_Update) {
                 const string log = "msg.log";
                 string logfile = Path.Combine(ConfData.CidsImagePath, log);
                 if (File.Exists(logfile)) {
@@ -516,6 +517,7 @@ namespace Client {
                 default:
                     return null;
             }
+            Debug.WriteLine($"get mirror res:{result}");
             if (result != null) {
                 Debug.WriteLine("In Send Mirror, it's going to download and update now");
                 ClientUpdate(this, ref result);
@@ -558,7 +560,7 @@ namespace Client {
                 } else return 1;
             }
             data = receive;
-            if (receive.NeedUpdate) {
+            if (receive.Need_Update) {
                 return 2;
             }
             return 1;
@@ -615,7 +617,7 @@ namespace Client {
             int seed = Convert.ToInt32(DateTime.Now.Ticks & 0xffffffff);
             Random rngix = new Random(seed);
             // update information
-            if (data.NeedUpdate && data.Image_url != "") {
+            if (data.Need_Update && data.Image_url != "") {
                 // Download part
                 string file = rngix.Next(3) + ".png";
                 if (File.Exists(ConfData.SaveAbsPathFile)) {
@@ -689,7 +691,7 @@ namespace Client {
                 Console.WriteLine(MRecv);
 #endif
                 System.Threading.Interlocked.Increment(ref success); // unlock i.e. break loop
-                if (RecvJson.NeedUpdate) // update time if  need
+                if (RecvJson.Need_Update) // update time if  need
                 {
                     lastTime = RecvJson.Time;
                 }
@@ -793,10 +795,10 @@ namespace Client {
 #else
 			String StoMirror = ComposeMirrorRequest(ConfData.UuId, lastTime); // the MSG will be sent to mirror
 #endif
-            Debug.WriteLine("hb-str:"+StoMirror);
             byte[] JsonBytes = System.Text.Encoding.ASCII.GetBytes(StoMirror);
 
             tcpStream.Write(JsonBytes, 0, JsonBytes.Length);
+            Debug.WriteLine("hb-str:"+StoMirror);
             //#if DEBUG
             //			Console.WriteLine("Tcp Msg Write");
             //#endif

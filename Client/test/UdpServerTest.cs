@@ -84,7 +84,7 @@ namespace Client.Test
             do
             {
                 //Console.WriteLine(beats++ + " Times HeatBeat");
-                if (json.NeedUpdate)
+                if (json.Need_Update)
                 {
                     //Console.WriteLine("url:" + json.Image_url);
                     //Console.WriteLine("当前课程"+json.Event.GetReadable().CourseTitle);
@@ -254,7 +254,7 @@ namespace Client.Test
                 .SetMirrorIp(localhost);
             Thread.Sleep(500);
             var json=client.SendFirstMirror();
-            Console.WriteLine(json.NeedUpdate);
+            Console.WriteLine(json.Need_Update);
         }
         public static void TcpHb()
         {

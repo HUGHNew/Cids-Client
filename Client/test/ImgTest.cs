@@ -81,17 +81,17 @@ namespace Client.Test
                 Image_url = "-",
                 Event = ent,
                 Next_event=emp,
-                NeedUpdate = true,
+                Need_Update = true,
                 Time = ""
             };
             Json.MirrorReceive empty_data = new Json.MirrorReceive {
                 Image_url = "",
-                NeedUpdate = false
+                Need_Update = false
             };
             Json.MirrorReceive info_data = new Json.MirrorReceive
             {
                 Image_url = "",
-                NeedUpdate = true,
+                Need_Update = true,
                 Event = ent,
                 Next_event=emp
             };

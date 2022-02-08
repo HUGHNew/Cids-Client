@@ -92,11 +92,15 @@ namespace Client
                 ConfData.Logo = Path.Combine(CidsPath,InitData.Logo);
                 ConfData.LogoUri = new Uri(Logo);
                 #endregion
-                try { 
+                try {
+                    Debug.WriteLine($"image path : {CidsImagePath}");
                     if(! Directory.Exists(CidsImagePath))
                         Directory.CreateDirectory(CidsImagePath);
-                }catch (Exception){}
-                Image.Operation.CopyDefaultWallpaperToRaw();
+                    Image.Operation.CopyDefaultWallpaperToRaw();
+                }catch (DirectoryNotFoundException e){
+                    Debug.WriteLine("Image Copy Error : "+e.Message);
+                    throw;
+                }
             }
         }
 

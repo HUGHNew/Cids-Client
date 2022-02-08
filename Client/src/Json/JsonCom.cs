@@ -84,7 +84,7 @@ namespace Client {
             public ReceiveComponent.EventData Event { get; set; }
             public ReceiveComponent.EventData Next_event { get; set; }
             //public 
-            public bool NeedUpdate { get; set; }
+            public bool Need_Update { get; set; }
             public String Time { get; set; }
             public override String ToString() {
                 return Newtonsoft.Json.JsonConvert.SerializeObject(this);
