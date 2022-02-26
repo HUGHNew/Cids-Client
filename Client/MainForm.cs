@@ -73,8 +73,8 @@ namespace Client
                     resend = true;
                 }
             } while (resend);
-            ClientTool.Update(ref data);
-            Client.Message.Show.MessageShow(data.Message);
+            ClientTool.Update(ref data); // set wallpaper
+            Client.Message.Show.MessageShow(data.Message); // show msg
             CidsClient.ClientBeat(UdpClient,ref data);
         }
         private void BGWorkerMain_RunWorkerCompleted(object sender, System.ComponentModel.RunWorkerCompletedEventArgs e)

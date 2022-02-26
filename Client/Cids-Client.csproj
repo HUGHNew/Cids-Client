@@ -52,6 +52,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Feedback.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Feedback.Designer.cs">
+      <DependentUpon>Feedback.cs</DependentUpon>
+    </Compile>
     <Compile Include="IconLabel.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -73,6 +79,7 @@
     <Compile Include="src\Debug.cs" />
     <Compile Include="src\Init.cs" />
     <Compile Include="src\Image.cs" />
+    <Compile Include="src\Json\Extensions.cs" />
     <Compile Include="src\Message\AutoClosingForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -89,6 +96,9 @@
     <Compile Include="src\Socket.cs" />
     <Compile Include="src\Time.cs" />
     <Compile Include="test\JsonTest.cs" />
+    <EmbeddedResource Include="Feedback.resx">
+      <DependentUpon>Feedback.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="IconLabel.resx">
       <DependentUpon>IconLabel.cs</DependentUpon>
     </EmbeddedResource>

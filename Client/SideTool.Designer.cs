@@ -34,8 +34,8 @@ namespace Client
             this.ToolsPanel = new System.Windows.Forms.FlowLayoutPanel();
             this.Issue = new System.Windows.Forms.Button();
             this.Questionnaire = new System.Windows.Forms.Button();
-            this.iconLabel1 = new Client.IconLabel();
             this.HideTimer = new System.Windows.Forms.Timer(this.components);
+            this.iconLabel1 = new Client.IconLabel();
             this.ToolsPanel.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -60,6 +60,7 @@ namespace Client
             this.Issue.TabIndex = 0;
             this.Issue.Text = "意见反馈";
             this.Issue.UseVisualStyleBackColor = true;
+            this.Issue.Click += new System.EventHandler(this.STBtnIssueClick);
             // 
             // Questionnaire
             // 
@@ -69,6 +70,12 @@ namespace Client
             this.Questionnaire.TabIndex = 1;
             this.Questionnaire.Text = "问卷调查";
             this.Questionnaire.UseVisualStyleBackColor = true;
+            this.Questionnaire.Click += new System.EventHandler(this.Questionnaire_Click);
+            // 
+            // HideTimer
+            // 
+            this.HideTimer.Enabled = true;
+            this.HideTimer.Tick += new System.EventHandler(this.Hide_Tick);
             // 
             // iconLabel1
             // 
@@ -77,11 +84,6 @@ namespace Client
             this.iconLabel1.Name = "iconLabel1";
             this.iconLabel1.Size = new System.Drawing.Size(218, 70);
             this.iconLabel1.TabIndex = 0;
-            // 
-            // HideTimer
-            // 
-            this.HideTimer.Enabled = true;
-            this.HideTimer.Tick += new System.EventHandler(this.Hide_Tick);
             // 
             // SideTool
             // 

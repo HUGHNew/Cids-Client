@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Newtonsoft.Json;
 
 namespace Client {
@@ -10,59 +11,42 @@ namespace Client {
     // </Summary>
     namespace Json {
         class MirrorRequest {
-            private String uuid;
-            private String mr_time; // time
-            public String UUID{
-                get {
-                    return uuid;
-                 }
-                set {
-                    uuid = value;
-                }
+            public Dictionary<String, JsonExtensionBase> addons { get; set; }
+            public List<String> extension => addons.Keys.ToList();
+            public String UUID { get; set; }
+            public String time { get;set; }
+            public MirrorRequest(String id, String time) {
+                this.UUID = id;
+                this.time = time;
+                this.addons = new Dictionary<String, JsonExtensionBase>();
             }
-            public String Time{
-                get
-                {
-                    return mr_time;
-                }
-                set
-                {
-                    mr_time = value;
-                }
+            public MirrorRequest AddExtension(String name,JsonExtensionBase content) {
+                addons.Add(name, content);
+                return this;
             }
-            public MirrorRequest(String id,String time)
-            {
-                this.uuid = id;
-                this.mr_time = time;
-            }
-            public override String ToString()
-            {
-                return "UUID:" + uuid + " time:" + mr_time; 
+            public override String ToString() {
+                //Console.WriteLine(Extensions[extension[0]]);
+                return JsonConvert.SerializeObject(this);
             }
         }
-        namespace ReceiveComponent
-        {
+        namespace ReceiveComponent {
             // brief: Encapsulation of the Emengency Message for JSON
-            public class MessageData
-            {
+            public class MessageData {
                 public string Title { get; set; }
                 public string Text { get; set; }
                 public int ExpireTime { get; set; } //Sec
-                public override string ToString()
-                {
-                    return "Title:"+Title+"\tText:"+Text+"\tExpireTime:"+ ExpireTime;
+                public override string ToString() {
+                    return "Title:" + Title + "\tText:" + Text + "\tExpireTime:" + ExpireTime;
                 }
-                public MessageData(string title,string text,int expire)
-                {
+                public MessageData(string title, string text, int expire) {
                     Title = title;
                     Text = text;
                     ExpireTime = expire;
                 }
             }
             // 事件: 代表当前的课程(教室借用情况)
-            
-            public class EventData
-            {
+
+            public class EventData {
                 // 课程号
                 public string Kch { get; set; }
                 // 课序号
@@ -73,33 +57,28 @@ namespace Client {
                 public string Jsxm { get; set; }
                 // 教学地点
                 public string Jxdd { get; set; }
-                public ReadableEvent GetReadable()
-                {
+                public ReadableEvent GetReadable() {
                     return new ReadableEvent(Kcm, Kxh, Jsxm);
                 }
 
-                public override string ToString()
-                {
-                    return "课程号:"+ Kch+ "\t课序号:"+Kxh+"\t课程名:"+Kcm
-                            +"\n教师姓名:"+Jsxm+"\t教室地点:"+Jxdd;
+                public override string ToString() {
+                    return "课程号:" + Kch + "\t课序号:" + Kxh + "\t课程名:" + Kcm
+                            + "\n教师姓名:" + Jsxm + "\t教室地点:" + Jxdd;
                 }
             }
-            public class ReadableEvent
-            {
+            public class ReadableEvent {
                 public string CourseTitle { get; set; } // 课程名
                 public int CourseNo { get; set; } // 课序号
                 public string Professor { get; set; } // 教师名
 
-                public ReadableEvent(string title,int number,string teacher)
-                {
+                public ReadableEvent(string title, int number, string teacher) {
                     CourseTitle = title;
                     CourseNo = number;
                     Professor = teacher;
                 }
             }
         }
-        public class MirrorReceive
-        {
+        public class MirrorReceive {
             public string Image_url { get; set; }
             public List<ReceiveComponent.MessageData> Message { get; set; }
             public ReceiveComponent.EventData Event { get; set; }
@@ -115,17 +94,15 @@ namespace Client {
             //    this.update = needUpdate;
             //}
         }
-        namespace ConfComponent
-        {
-            public class NetData { 
+        namespace ConfComponent {
+            public class NetData {
                 public string Main_Ip { get; set; }
                 public int Main_Port { get; set; }
                 public int Mirror_Port { get; set; }
                 [JsonIgnore]
                 public bool IPv4 => Main_Ip.Contains("."); // need to be transient
             }
-            public class TimeData
-            {
+            public class TimeData {
                 // interval of each Udp package
                 public int Delay { get; set; }
                 // heartbeat interval
@@ -134,14 +111,12 @@ namespace Client {
                 public int Limit { get; set; }
                 public SleepTime Sleep { get; set; }
             }
-            public class SleepTime
-            {
+            public class SleepTime {
                 public int Min { get; set; }
                 public int Max { get; set; }
             }
         }
-        public class Conf
-        {
+        public class Conf {
             public ConfComponent.NetData Net { get; set; }
             public ConfComponent.TimeData Time { get; set; }
             public int Protocol { get; set; }
